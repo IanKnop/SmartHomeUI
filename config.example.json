@@ -13,7 +13,7 @@
         {
             "id": "home",
             "img": "img/main_lights.svg",
-            "__external": "home"
+            "__external": "example"
         }
     ]
 }

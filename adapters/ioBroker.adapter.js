@@ -9,7 +9,7 @@
 // ADAPTER REGISTRATION AFTER LOAD
 this.addEventListener("load", function () {
 
-    Adapters.iobroker = new iobroker('http://iot.knop.family', '8087');
+    Adapters.iobroker = new iobroker('http://192.168.178.70', '8087');
 
 });
 
