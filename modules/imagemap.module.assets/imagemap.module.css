@@ -1,0 +1,17 @@
+.imagemap-container {
+    
+    display: block;
+    position: absolute;
+    
+    top: 40px;
+    left: 20px;
+    width: calc(100% - 40px);
+    height: calc(100% - 60px);
+}
+
+.imagemap-link {
+
+    position: absolute;
+    cursor: pointer;
+
+}

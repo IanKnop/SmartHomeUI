@@ -1,0 +1,23 @@
+#ignore private config
+config.json
+
+#ignore debug files
+/debug/**
+
+#ignore private view files
+/views/*.json
+!/views/example.json
+/config/**
+
+#ignore private adapter
+/adapters/knopFamily.adapter.js
+
+#ignore private floor plans (images)
+/img/cars
+/img/floorplans/*
+!/img/floorplans/floorplan.example.svg
+
+#MacOS
+*.DS_Store
+*.DAV
+

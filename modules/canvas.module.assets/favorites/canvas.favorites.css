@@ -1,0 +1,65 @@
+.fav-title {
+    
+    display: block;
+    position: absolute;
+    width: 100%;
+    bottom: 5%;
+    
+    color: var(--white);
+    font-family: var(--standard-font);
+    font-weight: 200;
+    font-size: 0.8em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.fav-image {
+    
+    display: block;
+    position: relative;
+
+    margin-top: 10%;
+    background-size: 5vmin;
+    height: 50%;
+    width: 100%;
+}
+
+.fav-button-group {
+
+    display: grid;
+    position: absolute;
+    
+    box-shadow: var(--shadow-control);
+    border-radius: var(--corner-radius);
+
+    height: 85%;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+
+    grid-gap: 0.3vmin;
+}
+
+.fav-button {
+    
+    display: block;
+    position: relative;
+
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+
+    background: var(--alt-button-gradient-reverse);
+    cursor: pointer;
+}
+
+.fav-button-middle {
+    background: var(--mainB-opaque)!important;
+}
+
+.fav-button-bottom {
+    
+    background: var(--alt-button-gradient);
+    cursor: pointer;
+}

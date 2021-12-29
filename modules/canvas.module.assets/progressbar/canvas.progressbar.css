@@ -1,0 +1,65 @@
+/* =========================================================
+    CANVAS ELEMENT: PROGRESS BAR
+   ========================================================= */
+
+.progress-small-title {
+
+    display: inline-block;
+    position: absolute;
+
+    color: var(--module-footer-font-color);
+    font-size: 2.5vmin;
+    line-height: 3.25vmin;
+    font-weight: 200;
+    text-transform: uppercase;
+    
+    left: 0;
+}
+
+.progress-value {
+
+    display: inline-block;
+    position: absolute;
+
+    color: var(--module-footer-font-color);
+    font-size: 2.5vmin;
+    line-height: 3.25vmin;
+
+    right: 0;
+}
+
+.progress-border {
+
+    display: block;
+    position: relative;
+    border-radius: var(--corner-radius-button);
+    border: calc(1.5 * var(--border-width)) solid var(--main-color);
+    background: #1a2f387d;
+
+    height: 100%;
+    width: 100%;
+
+}
+
+.progress-bar {
+
+    display: block;
+    position: relative;
+    border-radius: calc(var(--corner-radius-button) * 0.62);
+
+    /*background: repeating-linear-gradient(-45deg, #528ba2, #528ba2 1.5vmin, var(--main-color) 1.5vmin, var(--main-color) 3vmin);*/
+    background-color: var(--mainX-opaque);
+    height: 100%;
+}
+
+.progress-icon {
+    
+    background-size: contain;
+    left: -3.5vmin;
+    top: 0;
+    width: 2.75vmin;
+    height: 2.75vmin;
+    display: block;
+    position: absolute;
+
+}

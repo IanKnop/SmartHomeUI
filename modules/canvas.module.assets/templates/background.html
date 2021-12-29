@@ -1,0 +1,21 @@
+<script>
+    
+    function canvasResize() {
+
+        /* canvasResize()___________________________________________________________
+        Event occurs when window size has changed                                  */        
+
+        var contentRatio = '{{[ratio]}}';
+        keepAspectResize(getCanvasContainer('{{[id]}}'), getCanvasContent('{{[id]}}'), contentRatio);
+    }
+
+    window.addEventListener('load', canvasResize);
+    window.addEventListener('resize', canvasResize);
+
+</script>
+<div id="canvas-{{[id]}}" style="position: absolute; display: flex; width: 95%; height: 95%; left: 2.5%; top: 5%;">
+    <div id="canvas-inner-{{[id]}}" style="position: relative; display: flex; width: 100%; height: 100%; background-image: url({{[img]}}); background-repeat: no-repeat; background-position: center; {{[style]}}">
+        <div id="canvas-content-{{[id]}}" style="position: absolute;">{{[content]}}</div>
+    </div>
+</div>
+

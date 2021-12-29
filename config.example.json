@@ -1,0 +1,19 @@
+{   
+    "header": "<strong>SMART HOME</strong> CONTOL CENTER",
+    "adapter": "ioBroker",
+    "theme": "purple",
+    "viewWidth": "1024px",
+    "viewHeight": "768px",
+    "viewGridColumns": "25",
+    "viewGridRows": "20",
+    "headerStart": "1;1",
+    "headerEnd": "3;25",
+    "views": 
+    [
+        {
+            "id": "home",
+            "img": "img/main_lights.svg",
+            "__external": "home"
+        }
+    ]
+}

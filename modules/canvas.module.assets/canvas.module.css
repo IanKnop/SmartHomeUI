@@ -1,0 +1,530 @@
+/* =========================================================
+    Global 
+   ========================================================= */
+
+:root {
+    
+    /* Header */
+    --element-header-back-color:            var(--module-header-color);
+    --element-header-font-color:            var(--module-header-font-color);
+    --element-header-font-size:             2.25vmin;
+    --header-font-size-vertical:            1.75vmin;
+    --header-line-height:                   2.75vmin;
+    --header-line-height-vertical:          2vmin;
+
+    /* Values */
+    --label-color:                          var(--white);
+    --value-color:                          var(--white);
+
+    /* Buttons */
+    --button-size:                          8vmin;
+    --button-size-vertical:                 5.5vmin;
+    --button-icon-size:                     60%;
+    --switch-button-gradient:               var(--standard-button-gradient);
+    --switch-button-active-gradient:        var(--standard-button-active-gradient);
+    --switch-button-active-green-gradient:  var(--standard-button-active-green-gradient);
+    --switch-button-active-red-gradient:    var(--standard-button-active-red-gradient);
+    --scene-button-gradient:                var(--mode-button-gradient);
+    --app-button-gradient:                  var(--function-button-gradient);
+
+    /* Footer */
+    --footer-back-color:                    var(--module-footer-gradient);
+    --footer-height:                        3.5vmin;
+    --footer-height-vertical:               2.25vmin;
+    --footer-height-small:                  2.75vmin;
+    --footer-height-small-vertical:         2vmin;
+    --footer-value-size:                    2.25vmin;
+    --footer-value-size-vertical:           1.75vmin;
+    --footer-small-value-size:              1.75vmin;
+    --footer-small-value-size-vertical:     1.25vmin;
+}
+
+/* =========================================================
+    Module Canvas 
+   ========================================================= */
+
+module-canvas {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    margin-top: var(--module-standard-margin);
+    margin-left: var(--module-standard-margin);
+    width: calc(100% - (2 * var(--module-standard-margin)));
+    height: calc(100% - var(--header-font-size) - (2 * var(--module-standard-margin)));
+}
+
+/* =========================================================
+    CANVAS ELEMENTS
+   ========================================================= */
+
+element {
+
+    position: absolute;
+    display: block;
+
+    text-align: center;
+
+}
+
+.element-header {
+    
+    display: inline-block;
+
+    background: var(--element-header-back-color);
+
+    border: var(--border-width) solid var(--border-color);
+    border-radius: var(--corner-radius-button);
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+        
+    color: var(--element-header-font-color);
+    font-family: var(--standard-font);
+    font-size: var(--element-header-font-size);
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    
+    z-index: 99;
+    width: 90%;
+}
+
+.element-footer {
+
+    display: inline-block;
+    position: relative;
+    z-index: 150;
+    
+    background: var(--footer-back-color);
+
+    border: var(--border-width) solid var(--border-color);
+    border-top: none;
+    border-radius: var(--corner-radius-button);
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+    
+    box-shadow: 0 1.5vw 2vw 0px #00000022;
+
+    width: 90%;
+    margin-top: 0.05vw;
+}
+
+.element-group {
+
+    display: block;
+    z-index: 175;
+
+    border-radius: var(--corner-radius-button);
+    
+    background: transparent;
+    box-shadow: var(--shadow-control);
+    
+    z-index: 100;
+}
+
+.canvas-label {
+
+    display: inline-block;
+    position: relative;
+
+    color: var(--label-color);
+    text-transform: uppercase;
+    font-weight: 600;
+
+}
+
+.canvas-value {
+
+    display: inline-block;
+    position: relative;
+    color: var(--main-color-light);
+    font-weight: 200;
+    
+}
+
+@media (min-aspect-ratio: 5/4) {
+
+    .element-header {
+        font-size:  var(--header-font-size);
+        line-height:  var(--header-line-height);
+    }
+
+    .element-footer {
+        height: var(--footer-height);
+    }
+
+    .element-footer-small {
+
+        height: var(--footer-height-small);
+    }
+
+    .element-footer-value {
+    
+        font-size: var(--footer-value-size);
+    }
+
+    .element-footer-small-value {
+    
+        font-size: var(--footer-small-value-size)!important;
+    }
+
+    .canvas-control {
+        width: var(--button-size);
+        height: var(--button-size);
+    }
+
+    .button-image {
+        width: var(--button-size);  
+        height: var(--button-size);
+    }
+    
+}
+
+@media (max-aspect-ratio: 5/4) {
+
+    .element-header {
+        font-size:  var(--header-font-size-vertical);
+        line-height:  var(--header-line-height-vertical);
+    }
+
+    .element-footer {
+        height: var(--footer-height-vertical);
+    }
+
+    .element-footer-small {
+
+        height: var(--footer-height-small-vertical);
+    }
+
+    .element-footer-value {
+    
+        font-size: var(--footer-value-size-vertical);
+    }
+
+    .element-footer-small-value {
+    
+        font-size: var(--footer-small-value-size-vertical)!important;
+    }
+
+    .canvas-control {
+        width: var(--button-size-vertical);
+        height: var(--button-size-vertical);
+    }
+    
+    .button-image {
+        width: var(--button-size-vertical);
+        height: var(--button-size-vertical);
+    }
+}
+
+.canvas-control {
+    display: inline-block;
+    z-index: 185;
+
+    border: var(--border-width) solid var(--border-color);
+    background: var(--scene-button-gradient);
+
+    cursor: pointer;
+    z-index: 150;
+}
+
+.canvas-table {
+
+    width: 100%;
+    height: 95%;
+
+}
+
+.canvas-image {
+
+    position: relative;
+    display: block;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    margin: auto;
+}
+
+
+/* =========================================================
+    CANVAS IMAGES ASPECT RATIO 
+   ========================================================= */
+
+.ratio-outside-canvas {
+
+    position: relative;
+    height: min-content;
+    max-height: 100%;
+}
+
+.ratio-inside-canvas {
+
+    position: relative;
+}
+
+.ratio {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.ratio.vertical, .ratio.vertical > canvas {
+    height: 99%;
+    max-width: 99%;
+}
+
+.ratio.horizontal, .ratio.horizontal > canvas {
+    width: 99%;
+    max-height: 100%;
+    
+}
+
+.ratio > div {
+    position: absolute;
+    top: 1%;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+/* =========================================================
+    CONTROL GROUP: BUTTON
+   ========================================================= */
+
+.navigate-control {
+
+    background: var(--switch-button-gradient);
+    z-index: 155;
+    box-shadow: var(--shadow-button);
+}
+
+.switch-control {
+
+    background: var(--switch-button-gradient);
+    z-index: 155;
+    box-shadow: var(--shadow-button);
+}
+
+.switch-control-active {
+
+    background: var(--switch-button-active-gradient);
+    box-shadow: var(--shadow-button-pressed);
+}
+
+.switch-control-active-red {
+
+    background: var(--switch-button-active-red-gradient);
+    box-shadow: var(--shadow-button-pressed);
+}
+
+.switch-control-active-green {
+
+    background: var(--switch-button-active-green-gradient);
+    box-shadow: var(--shadow-button-pressed);
+}
+
+.indicator {
+    display: block;
+    position: absolute;
+    width: 1.25vmin;
+    height: 1.25vmin;
+    margin-top: 0.5vmin;
+    margin-left: 0.5vmin;
+    border-radius: 2vmin;
+    background-color: var(--yellow);
+}
+
+.indicator-red {
+
+    background-color: var(--red);
+}
+
+.indicator-green {
+
+    background-color: var(--green);
+}
+
+.app-control {
+
+    background: var(--app-button-gradient);
+    box-shadow: var(--shadow-control);
+    z-index: 155;
+}
+
+.scene-control {
+
+    background: var(--app-button-gradient);
+    box-shadow: var(--shadow-control);
+    z-index: 155;
+}
+
+.button-image {
+
+    display: block;
+    position: absolute;
+
+    background-size: var(--button-icon-size);
+    background-position: center;
+    background-repeat: no-repeat;
+
+}
+
+/* =========================================================
+    CONTROL GROUP: VALUE LABEL
+   ========================================================= */
+
+.value-control {
+    
+    color: var(--value-color);
+    font-size: 4vmin;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    vertical-align: top;
+
+    width: calc(2 * var(--button-size));
+
+}
+
+.value-control-small {
+    
+    width: var(--button-size)!important;
+
+}
+
+/* =========================================================
+    CONTROL GROUP: POSITION BASED BUTTON STYLING
+   ========================================================= */
+
+.single-button {
+
+    border-radius: var(--corner-radius-button);
+    
+}
+
+.group-button-left {
+
+    border-top-left-radius: var(--corner-radius-button);
+    border-bottom-left-radius: var(--corner-radius-button);
+    
+}
+
+.group-button-center {
+
+    border-left: none;
+    
+}
+
+.group-button-right {
+    
+    border-top-right-radius: var(--corner-radius-button);
+    border-bottom-right-radius: var(--corner-radius-button);
+    border-left: none;
+}
+   
+/* =========================================================
+    CONTROL GROUP: FOOTER
+   ========================================================= */
+
+.element-footer-value {
+    
+    position: absolute;
+
+    font-family: var(--standard-font);
+    color: var(--module-footer-font-color);
+
+    text-transform: uppercase;
+    font-weight: 600;
+
+    margin-left: 1vmin;
+    margin-right: 1vmin;
+
+}
+
+.element-footer-small-value {
+    
+    font-size: var(--footer-small-value-size);
+}
+
+/* =========================================================
+    EXTERNAL: iCALENDAR
+   ========================================================= */
+
+.icalNormal {
+    display: inline-block;
+    color: var(--main-color-light)!important;
+    font-size: 3vmin;
+    font-weight: 200;
+    width: 18vmin;
+}
+
+.icalNormal2 {
+    display: inline-block;
+    position: absolute;
+    color: var(--white)!important;
+    font-size: 3vmin;
+    font-weight: 600;
+    
+    overflow: hidden;
+    height: 4vmin;
+}
+
+.icalPrePreWarn {
+    display: inline-block;
+    color: var(--yellow)!important;
+    font-size: 3vmin;
+    font-weight: 200;
+    width: 18vmin;
+}
+
+.icalPrePreWarn2 {
+    display: inline-block;
+    position: absolute;
+    color: var(--yellow)!important;
+    font-size: 3vmin;
+    font-weight: 600;
+
+    overflow: hidden;
+    height: 4vmin;
+}
+
+.icalPreWarn {
+    display: inline-block;
+    color: var(--orange)!important;
+    font-size: 3vmin;
+    font-weight: 200;
+    width: 18vmin;
+}
+
+.icalPreWarn2 {
+    display: inline-block;
+    position: absolute;
+    color: var(--orange)!important;
+    font-size: 3vmin;
+    font-weight: 600;
+
+    overflow: hidden;
+    height: 4vmin;
+}
+
+
+.icalWarn {
+    display: inline-block;
+    color: var(--red)!important;
+    font-size: 3vmin;
+    font-weight: 600;
+    width: 18vmin;
+}
+
+.icalWarn2 {
+    display: inline-block;
+    position: absolute;
+    color: var(--red)!important;
+    font-size: 3vmin;
+    font-weight: 600;
+    
+    overflow: hidden;
+    height: 4vmin;
+}

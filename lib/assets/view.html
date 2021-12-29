@@ -1,0 +1,31 @@
+<div id="cc-screensaver" class="screen-saver">
+    <div id="cc-screensaver-dim" class="screen-saver-dim"></div> 
+    <div style="position: absolute; top: 5vh; right: 5vh; font-size: 5.5vh; line-height: 7.5vh; opacity: 0.85; color: var(--main-color-light);">{{[CURRENT_DATE_LONG]}}</div>
+    <div style="position: absolute; top: 15.5vh; right: 5vh; font-size: 17.5vh; font-weight: 200; line-height: 7.5vh; opacity: 0.85;">{{[CURRENT_TIME]}}</div>
+    <div id="screensaver-grid" class="grid" style="grid-template-columns: {{[columns]}}; grid-template-rows: {{[rows]}};"> 
+        {{[lock-modules]}}
+    </div>
+</div>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script>currentView = '{{[id]}}';</script>
+<body onload="initializeUserInterface()">
+<div id="view-grid" class="grid" style="grid-template-columns: {{[columns]}}; grid-template-rows: {{[rows]}};"> 
+    {{[header]}}
+    {{[modules]}}
+</div>
+<div id="cc-ping" style="display: flex; align-items: center; height: 100%; visibility: collapse;">
+    <!--<div class="lds-dual-ring" style="margin: auto; zoom: 5;"></div>-->
+    <div class="lds-ripple" style="margin: auto; zoom: 10;"><div></div><div></div></div>
+    <!--<div class="lds-ring" style="margin: auto; zoom: 5;"><div></div><div></div><div></div><div></div></div>-->
+</div>
+<module id="cc-msgbox" class="border rounded module-gradient" style="visibility: collapse; z-index: 10000; box-shadow: 0 0 60px 0px #b2dfef7a; display: flex; position: absolute; width: 40%; height: 30%; top: 35%; left: 30%;">
+    <div id="cc-msgbox-text" style="font-size: 3.5vmin; line-height: 6vh; align-self: center; margin: auto;">
+    </div>
+    <div id="cc-msgbox-header">
+        <div id="cc-msgbox-close" style="visibility: collapse; position: absolute; top: 5%; right: 2.5%; cursor: pointer;" onclick="closeBox();">
+            <img style="height: 3.5vh;" src="img/icons/cancel.svg">
+        </div>
+    </div>
+</module>
+</body>

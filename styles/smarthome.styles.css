@@ -1,0 +1,655 @@
+/*  =========================================================
+    KNOP.FAMILY
+    Smart Home Control Center - Cascading Style Sheets
+   
+    (C) 2020-2021 by Ian Knop, Weiterstadt, Germany
+    www.knop.family
+    ========================================================= */
+        
+/* =========================================================
+    Fonts
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@100;200;300;500;700&display=swap');
+
+/* =========================================================
+    Global 
+   ========================================================= */
+
+:root {
+    
+    /* Create Color Set based on seed colors */
+    --background-color:         hsl(var(--colorA), var(--saturationA), 10%, 100%);
+
+    --mainA:                    hsl(var(--colorA), var(--saturationA), var(--lightnessA), var(--opacityA));
+    --mainB:                    hsl(var(--colorB), var(--saturationB), var(--lightnessB), var(--opacityB));
+    --mainX:                    hsl(var(--colorX), var(--saturationX), var(--lightnessX), var(--opacityX));
+    
+    --mainA-opaque:             hsl(var(--colorA), var(--saturationA), var(--lightnessA), 100%);
+    --mainB-opaque:             hsl(var(--colorB), var(--saturationB), var(--lightnessB), 100%);
+    --mainX-opaque:             hsl(var(--colorX), var(--saturationX), var(--lightnessX), 100%);
+
+    --mainA-semi:               hsl(var(--colorA), var(--saturationA), var(--lightnessA), 80%);
+    --mainB-semi:               hsl(var(--colorB), var(--saturationB), var(--lightnessB), 80%);
+    --mainX-semi:               hsl(var(--colorX), var(--saturationX), var(--lightnessX), 80%);
+
+    --mainA-dark:               hsl(var(--colorA), var(--saturationA), calc(var(--lightnessA) / 1.2), var(--opacityA));
+    --mainB-dark:               hsl(var(--colorB), var(--saturationB), calc(var(--lightnessB) / 1.2), var(--opacityB));
+    --mainX-dark:               hsl(var(--colorX), var(--saturationX), calc(var(--lightnessX) / 1.2), var(--opacityX));
+
+    --mainA-dark-opaque:        hsl(var(--colorA), var(--saturationA), calc(var(--lightnessA) / 1.2), 100%);
+    --mainB-dark-opaque:        hsl(var(--colorB), var(--saturationB), calc(var(--lightnessB) / 1.2), 100%);
+    --mainX-dark-opaque:        hsl(var(--colorX), var(--saturationX), calc(var(--lightnessX) / 1.2), 100%);
+
+    --mainA-dark-semi:          hsl(var(--colorA), var(--saturationA), calc(var(--lightnessA) / 1.2), 80%);
+    --mainB-dark-semi:          hsl(var(--colorB), var(--saturationB), calc(var(--lightnessB) / 1.2), 80%);
+    --mainX-dark-semi:          hsl(var(--colorX), var(--saturationX), calc(var(--lightnessX) / 1.2), 80%);
+
+    --mainA-black-opaque:       hsl(var(--colorA), var(--saturationA), 20%, 100%);
+    --mainB-black-opaque:       hsl(var(--colorB), var(--saturationB), 20%, 100%);
+    --mainX-black-opaque:       hsl(var(--colorX), var(--saturationX), 20%, 100%);
+   
+    --mainA-black-semi:         hsl(var(--colorA), var(--saturationA), 20%, 80%);
+    --mainB-black-semi:         hsl(var(--colorB), var(--saturationB), 20%, 80%);
+    --mainX-black-semi:         hsl(var(--colorX), var(--saturationX), 20%, 80%);
+
+    --mainA-light:              hsl(var(--colorA), var(--saturationA), calc(var(--lightnessA) * 1.2), var(--opacityA));
+    --mainB-light:              hsl(var(--colorB), var(--saturationB), calc(var(--lightnessB) * 1.2), var(--opacityB));
+    --mainX-light:              hsl(var(--colorX), var(--saturationX), calc(var(--lightnessX) * 1.2), var(--opacityX));
+
+    --mainA-light-opaque:       hsl(var(--colorA), var(--saturationA), calc(var(--lightnessA) * 1.2), 100%);
+    --mainB-light-opaque:       hsl(var(--colorB), var(--saturationB), calc(var(--lightnessB) * 1.2), 100%);
+    --mainX-light-opaque:       hsl(var(--colorX), var(--saturationX), calc(var(--lightnessX) * 1.2), 100%);
+
+    --mainA-white:              hsl(var(--colorA), var(--saturationA), 80%, calc(var(--opacityA) * 2));
+    --mainB-white:              hsl(var(--colorB), var(--saturationB), 80%, calc(var(--opacityB) * 2));
+    --mainX-white:              hsl(var(--colorX), var(--saturationX), 80%, calc(var(--opacityX) * 2));
+
+    --mainA-white-opaque:       hsl(var(--colorA), var(--saturationA), 80%, 100%);
+    --mainB-white-opaque:       hsl(var(--colorB), var(--saturationB), 80%, 100%);
+    --mainX-white-opaque:       hsl(var(--colorX), var(--saturationX), 80%, 100%);
+
+    --white:                    hsl(var(--colorA), 0%, 100%);
+    --yellow:                   hsl(30, calc(var(--saturationA) * 1.5), 75%);
+    --orange:                   hsl(24, calc(var(--saturationA) * 1.5), 75%);
+    --red:                      hsl(0, calc(var(--saturationA) * 1.5), 75%);
+    --green:                    hsl(128, calc(var(--saturationA) * 1.5)   , 75%);
+    --black:                    hsl(var(--colorA), 50%, 10%);
+
+    /* Fonts and Text Coloring (General) */
+    --standard-font:            "Saira Condensed", sans-serif;
+    --text-font-color:          var(--mainA-light-opaque);
+    --text-dark-color:          var(--mainA-black-opaque);
+    --header-font-color:        var(--white);
+
+    /* Header */
+    --header-backgroundA:       var(--mainA);
+    --header-backgroundB:       var(--mainB);
+    --header-backgroundX:       var(--mainX);
+    --header-gradient:          linear-gradient(to var(--header-direction), var(--header-backgroundA) 0%, var(--header-backgroundX) 100%);
+    
+    /* Modules */    
+    --module-background:        var(--mainA);
+    --module-gradient:          linear-gradient(to var(--direction), var(--mainX) 0%, var(--mainB) 100%);
+    --module-gradient-reverse:  linear-gradient(to var(--direction), var(--mainB) 0%, var(--mainA) 100%);
+    --module-gradient-opaque:   linear-gradient(to var(--direction), var(--mainX-opaque) 0%, var(--mainB-opaque) 100%);
+    --module-gradient-opaque-r: linear-gradient(to var(--direction), var(--mainB-opaque) 0%, var(--mainA-opaque) 100%);
+        
+    --window-header-gradient:   linear-gradient(to var(--direction), var(--mainB-dark-semi) 0%, var(--mainA-black-opaque) 100%);
+    --window-module-gradient:   linear-gradient(to var(--direction), var(--mainA-black-opaque) 0%, var(--mainB-semi) 100%);
+    --window-module-gradient-r: linear-gradient(to var(--direction), var(--mainB-opaque) 0%, var(--mainA) 100%);
+    
+    --module-header-color:      var(--mainX-white-opaque);
+    --module-header-font-color: var(--text-dark-color);
+    --module-footer-color:      var(--mainX-light-opaque);
+    --module-footer-font-color: var(--header-font-color);
+    --module-footer-gradient:   linear-gradient(to var(--direction), var(--mainB-black-opaque) 0%, var(--mainB-opaque) 100%);
+    
+    /* Fading / Dimming / Hiding */
+    --screen-saver-dim:         #000000ad; 
+    --behind-window-color:      #000000dd;
+    
+    /* Borders */
+    --border-color:             var(--mainA-white);
+    --border-gradient:          linear-gradient(to var(--direction), var(--mainA-white) 0%, var(--mainB-white) 100%);
+    
+    --green-border-color:       #598877;
+    --red-border-color:         #9a7663;
+
+    --shadow-control:           0px 0px 2vw 0px #00000055;
+    --shadow-button:            1px 0px 3px 0px #00000030;
+    --shadow-button-pressed:    inset 1px 1px 10px #00000073;
+
+    /* ================================================
+        Buttons
+       ================================================ */
+    
+    /* Button and Window Gradients (no transperency) */
+    --standard-button-gradient:                 linear-gradient(to var(--direction), var(--mainA-opaque) 0%, var(--mainX-opaque) 100%);
+    --standard-button-gradient-reverse:         linear-gradient(to var(--direction), var(--mainX-opaque) 0%, var(--mainA-opaque) 100%);
+    --standard-button-active-gradient:          linear-gradient(to bottom, #615d56 0%, var(--mainB-light-opaque) 100%);
+    --standard-button-active-green-gradient:    linear-gradient(to bottom, #576156 0%, var(--mainB-light-opaque) 100%);
+    --standard-button-active-red-gradient:      linear-gradient(to bottom, #615656 0%, var(--mainB-light-opaque) 100%);
+    
+    --alt-button-gradient:                      linear-gradient(to var(--direction), var(--mainB-opaque) 0%, var(--mainX-opaque) 100%);
+    --alt-button-gradient-reverse:              linear-gradient(to var(--direction), var(--mainX-opaque) 0%, var(--mainB-opaque) 100%);
+        
+    --mode-button-color:                        var(--mainB-opaque);
+    --mode-button-gradient:                     linear-gradient(to var(--direction), var(--mainB-dark-opaque)  0%, var(--mainB-opaque) 100%);
+    --mode-button-gradient-reverse:             linear-gradient(to var(--direction), var(--mainB-opaque) 0%, var(--mainB-dark-opaque) 100%);
+
+    --function-button-gradient:                 linear-gradient(to bottom, var(--mainB-dark-opaque)  0%, var(--mainA-opaque) 100%);
+    --function-button-gradient-reverse:         linear-gradient(to bottom, var(--mainA-opaque)  0%, var(--mainB-dark-opaque) 100%);
+}
+
+:root {
+    /* =====================================
+        TIMING
+       ===================================== */
+
+    --black-out-time:           5s;
+    --fade-in-duration:         5s;
+    --fade-out-duration:        1s; 
+
+    /* =====================================
+        SIZING
+       ===================================== */
+
+    /* Views */
+    --border-width:             0.1vmin;
+    --outside-margin:           7.5px;
+    --standard-margin:          1px;
+
+    /* Modules */
+    --module-standard-margin:   1.25%;
+    --module-header-font-size:  2.25vmin;
+    --module-spacing:           0.2vw;
+    
+    /* Corner Rounding */
+    --corner-radius:            2.5vmin;
+    --corner-radius-button:     0.75vmin;
+}
+
+.cc-inactive {
+    opacity: 0.5;
+}
+
+.screen-saver {
+
+    display: none; 
+    position: fixed;
+
+    background-position: center; 
+    background-size: cover; 
+    background-repeat: no-repeat;
+
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    z-index: 10000;
+}
+
+.screen-saver-dim {
+
+    display: none;
+    position: abosulte;
+
+    background-color: var(--screen-saver-dim);
+    
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    z-index: 10010;
+}
+
+/* =========================================================
+    Animations
+   ========================================================= */
+
+.screensaver-fadeIn {
+    animation: fadeIn ease var(--fade-in-duration);
+    -webkit-animation: fadeIn ease var(--fade-in-duration);
+}
+
+.screensaver-fadeOut {
+    animation: fadeOut ease var(--fade-out-duration);
+    -webkit-animation: fadeOut ease var(--fade-out-duration);
+}
+
+.caps {
+    text-transform: uppercase;
+}
+
+@keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+}
+
+@-webkit-keyframes fadeIn {
+    0% {opacity: 0;}
+    100% {opacity:1;}
+}
+
+@keyframes fadeOut {
+    0% {opacity: 1;}
+    100% {opacity:0;}
+}
+
+@-webkit-keyframes fadeOut {
+    0% {opacity: 1;}
+    100% {opacity:0;}
+}
+
+/* =========================================================
+    Controls
+   ========================================================= */
+
+module {
+    display: block;
+    position: relative;
+    
+    margin: var(--standard-margin);
+    
+    background: var(--module-gradient);
+    /*background-color: var(--module-background);*/
+    background-blend-mode: multiply;
+
+    overflow: hidden;
+}
+
+/* =========================================================
+    Views
+   ========================================================= */
+
+body {
+    margin: 0;
+    overflow: hidden;
+
+    font-family: var(--standard-font);
+    font-size: 2.75vmin;
+    font-weight: 200;
+    color: var(--white);
+
+    background-color: var(--background-color);
+}
+
+.page-header {
+
+    background: var(--header-gradient);
+}
+
+.view-title {
+
+    display: block;
+    position: absolute;
+    
+    margin-top: 1.5vh;
+    margin-left: 20px;
+    
+    color: var(--white); 
+    font-family: var(--standard-font);
+    font-size: 4vmin;
+    font-weight: 300;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.view-subtitle {
+
+    top: 6.25vmin;
+    margin-top: 0;
+
+    color: var(--mainX-white-opaque);
+   
+}
+
+.view-button-bar {
+
+    display: block;
+    position: absolute;
+    
+    top: 4vmin;
+    left: 52vmin;
+    width: calc(95vw - 52vmin);
+    text-align: right;
+    
+}
+
+.view-button {
+
+    display: inline-block;
+    position: relative;
+
+    width: 5vmin;
+    height: 5vmin;
+    
+    padding: 5px;
+    margin-left: 30px; 
+
+    cursor: pointer;
+}
+
+.view-button-icon {
+
+    position: relative;
+    height: 100%;
+
+    opacity: 0.9;
+    mix-blend-mode: lighten;
+   
+}
+
+.window-container {
+    position: fixed;
+    display: block;
+    background-color: var(--behind-window-color);
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+
+    z-index: 1000;
+}
+
+.window {
+    position: absolute;
+    display: grid;
+    top: 5vh;
+    left: 5vh;
+    height: calc(100% - 10vh);
+    width: calc(100% - 10vh);
+
+    z-index: 1100;
+}
+
+.grid {
+    position: absolute;
+    display: grid;
+    top: 0;
+    left: 0;
+    height: calc(100vh - (2 * var(--outside-margin)));
+    width: calc(100vw - (2 * var(--outside-margin)));
+    margin: var(--outside-margin);
+}
+
+.module-header {
+
+    display: inline;
+    
+    margin-left: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+
+    color: var(--module-header-font-color);
+    font-size: var(--module-header-font-size);
+    font-family: var(--standard-font);
+    font-weight: 600;
+    text-transform: uppercase;
+    
+    border: var(--border-width) solid var(--main-color);
+    border-radius: var(--corner-radius-button);
+    border-top-right-radius: 0px;
+    border-top-left-radius: 0px;
+    
+    box-shadow: var(--shadow-control);
+    background: var(--module-header-color);
+}    
+
+.border { 
+    border: var(--border-width) solid var(--border-color);
+    border-bottom-color: transparent;
+    border-right-color: transparent;
+}
+
+.border-top { border-top: 1px solid var(--border-color); }
+
+.border-bottom { border-bottom: 1px solid var(--border-color); }
+
+.border-left { border-left: 1px solid var(--border-color); }
+
+.border-right { border-right: 1px solid var(--border-color); }
+
+.border-sides {
+    border-left: 1px solid var(--border-color);;
+    border-right: 1px solid var(--border-color);;
+}
+
+.border-heads {
+    border-top: 1px solid var(--border-color);;
+    border-bottom: 1px solid var(--border-color);;
+}
+
+.border-module {
+    border-top: 2px solid var(--border-color)!important;    
+   
+}
+
+.no-border { border: none; }
+.no-border-top { border-top: none; }
+.no-border-bottom { border-bottom: none; }
+.no-border-left { border-left: none; }
+.no-border-right { border-right: none; }
+
+.rounded { 
+    border-radius: var(--corner-radius);
+}
+
+.rounded-top { 
+    border-top-right-radius: var(--corner-radius);
+    border-top-left-radius: var(--corner-radius);
+}
+
+.rounded-bottom { 
+    border-bottom-right-radius: var(--corner-radius);
+    border-bottom-left-radius: var(--corner-radius);
+}
+
+.rounded-left { 
+    border-top-left-radius: var(--corner-radius);
+    border-bottom-left-radius: var(--corner-radius);
+}
+
+.rounded-right { 
+    border-bottom-right-radius: var(--corner-radius);
+    border-top-right-radius: var(--corner-radius);
+}
+
+.rounded-top-left { border-top-left-radius: var(--corner-radius); }
+.rounded-top-right { border-top-right-radius: var(--corner-radius); }
+.rounded-bottom-left { border-bottom-left-radius: var(--corner-radius); }
+.rounded-bottom-right { border-bottom-right-radius: var(--corner-radius); }
+
+/* lock-module must be defined after border */
+.lock-module {
+    border: none!important;
+    background: none!important;
+}
+
+.lock-module-zoom {
+    zoom: 1.25;
+}
+
+.button {
+    
+    border: var(--border-width) solid var(--main-color);
+    border-radius: var(--corner-radius-button);
+    background: var(--standard-gradient);
+
+    box-shadow: var(--shadow-control);
+    cursor: pointer;
+    z-index: 150; 
+}
+
+.button-green {
+    border: var(--border-width) solid var(--green-border-color)!important;
+    background: var(--green-gradient);
+}  
+
+.button-orange {
+    border: var(--border-width) solid var(--red-border-color)!important;
+    background: var(--red-gradient);
+}   
+
+.button-icon {
+
+    width: 40px!important;
+    height: 40px!important;
+
+}
+
+.button-indicator-red {
+
+    background-color: var(--red);
+    border-radius: var(--corner-radius-button);
+    
+}
+
+.button-indicator-green {
+
+    background-color: var(--green);
+    border-radius: var(--corner-radius-button);
+    
+}
+
+.button-indicator-yellow {
+
+    background-color: var(--yellow);
+    border-radius: var(--corner-radius-button);
+    
+}
+
+
+.button-group-icon {
+
+    width: 35px!important;
+    height: 35px!important;
+    padding: 10px!important;
+
+}
+
+.airy {
+    
+    background: transparent!important;
+    box-shadow: none!important;
+    border: none!important;
+
+} 
+
+.player {
+    display: block;
+}
+
+/* =========================================================
+    WAIT ANIMATION
+   ========================================================= */
+
+.lds-ripple {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+
+  .lds-ripple div {
+    position: absolute;
+    border: 4px solid var(--main-color);
+    opacity: 1;
+    border-radius: 50%;
+    animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  }
+
+  .lds-ripple div:nth-child(2) {
+    animation-delay: -2s;
+  }
+
+  @keyframes lds-ripple {
+    0% {
+      top: 36px;
+      left: 36px;
+      width: 0;
+      height: 0;
+      opacity: 1;
+    }
+    100% {
+      top: 0px;
+      left: 0px;
+      width: 72px;
+      height: 72px;
+      opacity: 0;
+    }
+  }
+
+  .lds-dual-ring {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+  }
+
+  .lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border-radius: 50%;
+    border: 6px solidvar(--main-color);
+    border-color: var(--main-color) transparent var(--main-color) transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+  }
+
+  @keyframes lds-dual-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .lds-ring {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+
+  .lds-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border: 8px solid var(--main-color);
+    border-radius: 50%;
+    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: var(--main-color) transparent transparent transparent;
+  }
+
+  .lds-ring div:nth-child(1) {
+    animation-delay: -0.45s;
+  }
+
+  .lds-ring div:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+
+  .lds-ring div:nth-child(3) {
+    animation-delay: -0.15s;
+  }
+
+  @keyframes lds-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  
+  

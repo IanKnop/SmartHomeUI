@@ -1,0 +1,29 @@
+/*  =========================================================
+    KNOP.FAMILY
+    Smart Home Control Center - Ocean Theme
+   
+    (C) 2020-2021 by Ian Knop, Weiterstadt, Germany
+    www.knop.family
+    ========================================================= */
+
+:root {
+
+    --colorA: 195;
+    --saturationA: 35%;
+    --lightnessA: 35%;
+    --opacityA: 20%;
+
+    --colorB: 200;
+    --saturationB: 35%;
+    --lightnessB: 27%;
+    --opacityB: 30%;
+
+    --colorX: 185;
+    --saturationX: 60%;
+    --lightnessX: 35%;
+    --opacityX: 20%;
+
+    --header-direction: bottom;
+    --direction:        bottom;
+}
+

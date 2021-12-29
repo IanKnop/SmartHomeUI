@@ -1,0 +1,125 @@
+{
+    "header": "{{[CURRENT_DATE_LONG]}}",
+    "variants": [ "lights", "cimate" ],
+    "isHome": true,
+    "modules":
+    [
+        {
+            "id": "news",
+            "header": "Nachrichten",
+            "class": "border-left border-bottom rounded-bottom-left",
+            "start": "4;1",
+            "end": "20;10",
+            "module": "news.module"
+        },
+        {
+            "id": "floorplan",
+            "header": { "lights": "Lights", "climate": "Heating & Climate" },
+            "class": "border-right border-bottom rounded-bottom-right",
+            "start": "4;11",
+            "end": "20;25",
+            "module": "canvas.module",
+            "moduleProperties": {
+                "hasVariants": true,
+                "lights": {
+                    "img": "img/floorplans/floorplan-example.svg",
+                    "canvasElements": [
+                        {
+                            "title": "Wohnzimmer",
+                            "type": "buttongroup",
+                            "left": "60%",   
+                            "top": "40%",
+                            "controls": [
+                                {
+                                    "id": "switch-wohnzimmer",
+                                    "type": "switch",
+                                    "img": "img/icons/switch.svg",
+                                    "styles": "background-size: 65%",
+                                    "binding": "hue.0.livingroom.lampe",
+                                    "bindingProvider": "iobroker",
+                                    "action": "sendDefaultRequest('trigger', { deviceId: '{{[binding]}}' }, this, 'KEY1');"
+                                },
+                                {
+                                    "type": "select",
+                                    "img": "img/icons/scene_relax.svg",
+                                    "action": "sendDefaultRequest('scene', { sceneId: 'hue.0.livingroom.relax_scene' }, this, 'SCENE');"
+                                },
+                                {
+                                    "type": "select",
+                                    "img": "img/icons/scene_movie.svg",
+                                    "styles": "background-size: 50%;",
+                                    "action": "sendDefaultRequest('scene', { sceneId: 'hue.0.livingroom.movie_scene' }, this, 'SCENE');"
+                                }
+                            ],
+                            "footer": 
+                            [
+                                {
+                                    "id": "livingroom.humidity",
+                                    "binding": "hmip.example_thermostat.humidiy",
+                                    "bindingProvider": "iobroker",
+                                    "decimals": 1,
+                                    "suffix": "%",
+                                    "align": "left"
+                                },
+                                {
+                                    "id": "livingroom.temp",
+                                    "binding": "hmip.example_thermostat.temperature",
+                                    "bindingProvider": "iobroker",
+                                    "decimals": 1,
+                                    "suffix": "°",
+                                    "align": "right"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "climate": {
+                    "img": "img/floorplans/floorplan-example.svg",
+                    "canvasElements": [
+                        {
+                            "title": "Wohnzimmer",
+                            "type": "buttongroup",
+                            "left": "60%",   
+                            "top": "40%",
+                            "controls": [
+                                {
+                                    "type": "switch",
+                                    "img": "img/icons/switch_down.svg",
+                                    "action": "stepValue('hmip.0.devices.XXX.channels.1.setPointTemperature', -0.5, tempWohnzimmer);"
+                                },
+                                {
+                                    "type": "numeric",
+                                    "id": "tempWohnzimmer",
+                                    "binding": "hmip.0.devices.XXX.channels.1.setPointTemperature",
+                                    "decimals": 1,
+                                    "suffix": "°"
+                                },
+                                {
+                                    "type": "switch",
+                                    "img": "img/icons/switch_up.svg",
+                                    "action": "stepValue('hmip.0.devices.XXX.channels.1.setPointTemperature', 0.5, tempWohnzimmer);"
+                                }
+                            ],
+                            "footer": [
+                                {
+                                    "id": "wohnzimmer.humidity",
+                                    "binding": "hmip.0.devices.XXX.channels.1.humidity",
+                                    "decimals": 1,
+                                    "suffix": "%",
+                                    "align": "left"
+                                },
+                                {
+                                    "id": "wohnzimmer.temp",
+                                    "binding": "hmip.0.devices.XXX.channels.1.actualTemperature",
+                                    "decimals": 1,
+                                    "suffix": "°",
+                                    "align": "right"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
