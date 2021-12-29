@@ -63,3 +63,67 @@ The config file defines the views that are stored in the _/views_ folder. The vi
     ]
 }
 ```
+
+## Canvas Module
+
+The UI can be assembled using different modules (news, weather, canvas,...). The modules can be found in the _/modules_ folder and included in the modules-area in a views config file.  
+
+<p align="center">
+    <img src="doc/img/screenshot-main.png" alt="Screenshot of main view" width="450">
+    Screenshot of main view with news and weather
+</p>
+
+A module is called by the "module"-tag (i.e. "canvas.module"). Its properties are specified in the "moduleProperties"-area. For better maintenance and transparency it is useful to put these in external files via "__external"-tag. These files must be stored in the "/config" folder. The "/config" folder must be created and is not part of the distribution.
+
+```
+"module": "canvas.module",
+"conditions": [
+    {
+        "binding": "alexa2.0.Echo-Devices.G090LA09751703CL.Player.currentState",
+        "value": false,
+        "style": {
+            "visibility": "visible"
+        }
+    },
+    {
+        "binding": "alexa2.0.Echo-Devices.G090LA09751703CL.Player.currentState",
+        "value": true,
+        "style": {
+            "visibility": "hidden"
+        }
+    }
+],
+"moduleProperties": {
+    "__external": "lockscreen/lock-calendar"
+}
+```
+
+With the _canvas module_ you can arrange different types of user controls on a canvas. This gives you the ability to create floorplans with buttons to control particular smart home devices that are connected via ioBroker or any other adapter. 
+
+<p align="center">
+    <img src="doc/img/screenshot-floorplan.png" alt="Screenshot of floorplan" width="450">
+    Screenshot of floorplan using canvas module
+</p>
+
+## Weather Module
+
+The Weather Module is based on the "DasWetter" adapter in ioBroker and needs a valid (free) subscription of this weather API. Please see following configuration example to see how the module works. 
+
+```
+{
+    "id": "lock-weather",
+    "start": "8;16",
+    "end": "16;24",
+    "module": "weather.module",
+    "moduleProperties": {
+        "max_temp": "daswetter.0.NextDays.Location_1.Day_1.Maximale_Temperatur_value",
+        "min_temp": "daswetter.0.NextDays.Location_1.Day_1.Minimale_Temperatur_value",
+        "day_name": "daswetter.0.NextDays.Location_1.Day_1.Tag_value",
+        "icon_url": "daswetter.0.NextDays.Location_1.Day_1.iconURL",
+        "weather_text": "daswetter.0.NextDays.Location_1.Day_1.Wetter_Symbol_value",
+        "wind_text": "daswetter.0.NextDays.Location_1.Day_1.Wind_value",
+        "icon_url_prefix": "http://192.167.178.70:8081"
+    }
+}
+```
+

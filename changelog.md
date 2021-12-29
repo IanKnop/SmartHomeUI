@@ -8,6 +8,8 @@ www.knop.family
 Change Log
 ========================================================= 
 
+V0.2.1 - Added README and LICENSE
+
 V0.2.0 - Initial Beta Release
 
    - File structure optimizations for better maintenance
