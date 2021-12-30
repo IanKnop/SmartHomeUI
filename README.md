@@ -154,7 +154,7 @@ With the __canvas module__ you can arrange different types of user controls on a
 
 <br/>
 <p align="center">
-    <img src="doc/img/screenshot-floorplan.png" alt="Screenshot of floorplan" width="450">
+    <img src="doc/img/screenshot-floor.png" alt="Screenshot of floorplan" width="450">
     <p align="center">Screenshot of floorplan using canvas module</p>
 </p>
 <br/>
