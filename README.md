@@ -1,5 +1,6 @@
 # Smart Home UI
-#### Copyright (c) 2020-2021 by Ian Knop, Weiterstadt (Germany)
+#### by Ian Knop
+
 
 ## Introduction
 
@@ -118,12 +119,14 @@ The config file defines the views that are stored in the */views* folder. The vi
 ## Canvas Module
 
 The UI can be assembled using different modules (news, weather, canvas,...). The modules can be found in the */modules* folder and included in the modules-area in a views config file.  
+
 <br/>
 <p align="center">
     <img src="doc/img/screenshot-main.png" alt="Screenshot of main view" width="450">
     <p align="center">Screenshot of main view with news and weather</p>
 </p>
 <br/>
+
 A module is called by the *module*-tag (i.e. "canvas.module"). Its properties are specified in the *moduleProperties*-area. For better maintenance and transparency it is useful to put these in external files via *__external*-tag. These files must be stored in the "/config" folder. The */config* folder must be created and is not part of the distribution.
 
 ```
@@ -150,12 +153,14 @@ A module is called by the *module*-tag (i.e. "canvas.module"). Its properties ar
 ```
 
 With the *canvas module* you can arrange different types of user controls on a canvas. This gives you the ability to create floorplans with buttons to control particular smart home devices that are connected via ioBroker or any other adapter. 
+
 <br/>
 <p align="center">
     <img src="doc/img/screenshot-floorplan.png" alt="Screenshot of floorplan" width="450">
     <p align="center">Screenshot of floorplan using canvas module</p>
 </p>
 <br/>
+
 ## Weather Module
 
 The Weather Module is based on the "DasWetter" adapter in ioBroker and needs a valid (free) subscription of this weather API. Please see following configuration example to see how the module works. 
