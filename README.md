@@ -187,6 +187,31 @@ The Weather Module is based on the "DasWetter" adapter in ioBroker and needs a v
 }
 ```
 
+## Lock Screen
+
+As one major purpose of this application is to be used as wall mounted device it also includes a feature for showing a lock-screen during idle times that can be dimmed during the night. 
+
+The lock screen also provides the ability to include modules like widgets. 
+
+<br/>
+<p align="center">
+    <img src="doc/img/screenshot-main.png" alt="Screenshot of main view" width="450">
+    <p align="center">Screenshot of lock screen with some modules as widgets</p>
+</p>
+<br/>
+
+## Add new Features to the Application
+
+The program is designed to load any PHP or script files as long as they are located in the __modules/__ or __script/__ folder. In this way you can easily extend the application without actually modifying the original source code. For example you can add a JavaScript file with functions that are called through the __action__-tag of a switch button. 
+
+### Adapters
+
+You can write own adapters for other platforms that you use by copying the ioBroker.adapter.js and changing the functions and names in it to meet your requirements. By "self-registering" them through extending the global __Adapters__-object you can then refer to this adapter by using the __bindingProvider__-tag in den config files. 
+
+### Modules
+
+Please feel free to develop own modules that can provide standardized information and features more easily. The modules must match the __IModule__-interface and extend the __Module__-class. 
+
 ## Contact
 
 If you want to get in contact with me, ask for features or contribute to this project, please feel free to do so via GitHub.
