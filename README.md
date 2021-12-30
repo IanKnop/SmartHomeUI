@@ -29,7 +29,7 @@ For getting the most out of this project for you, it will also be neccessary to 
 
 ## ioBroker Adapter
 
-This terminal DOES NOT include any direct interfaces to smart home devices. However it has an adapter for the ioBroker-API and therefore can access all devices that are compatible with that. The adapter can be used after activating the REST-API on your ioBroker installation and change the information in __adapters/ioBroker.adapter.js__:
+This application __does not__ include any direct interfaces to smart home devices. However it has an adapter for the ioBroker-API and therefore can access all devices that are compatible with that. The adapter can be used after activating the REST-API on your ioBroker installation and change the information in __adapters/ioBroker.adapter.js__:
 
 ```
 this.addEventListener("load", function () {
