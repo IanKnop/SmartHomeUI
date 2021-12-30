@@ -6,7 +6,7 @@ The __Smart Home UI__ is a PHP/JavaScript based user interface for controlling d
 
 ## Whats the difference to other UIs like VIS or OpenHAB
 
-The idea behind this application is to avoid complicated and unreliable designers with an overload of options while still providing a very professional and modern look & feel. Beside that very lean configuration JSON files that are easy to understand and to extend allow to build UIs quickly. 
+The idea behind this application is to avoid complicated and unreliable designers with an overload of options while still providing a very professional and modern look & feel. Beside that, very lean config files (JSON) which are easy to understand, to maintain and to extend allow to build UIs quickly. 
 
 Making the configuration files leaner yet more flexible is the central mission of this project and the main difference to other projects that focus particularly on visual design features.  
 
