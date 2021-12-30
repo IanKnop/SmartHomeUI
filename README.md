@@ -4,6 +4,12 @@
 
 The __Smart Home UI__ is a PHP/JavaScript based user interface for controlling devices via tablet (i.e. wall mounted) or web browser. Due to its modular design it can be used in a variety of use-cases in which users should be able to invoke actions (i.e. smart lighting) via graphical user interface.
 
+## Whats the difference to other UIs like VIS or OpenHAB
+
+The idea behind this application is to avoid complicated and unreliable designers with an overload of options while still providing a very professional and modern look & feel. Beside that very lean configuration JSON files that are easy to understand and to extend allow to build UIs quickly. 
+
+Making the configuration files leaner yet more flexible is the central mission of this project and the main difference to other projects that focus particularly on visual design features.  
+
 ## Getting Started / Preconditions
 
 To run this application it is mandatory that you fullfil following preconditions:
