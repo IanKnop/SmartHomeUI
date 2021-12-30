@@ -1,4 +1,5 @@
 # Smart Home UI
+#### Copyright (c) 2020-2021 by Ian Knop, Weiterstadt (Germany)
 
 ## Introduction
 
