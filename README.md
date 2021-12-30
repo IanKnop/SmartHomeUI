@@ -4,6 +4,23 @@
 
 The _Smart Home UI_ is a PHP/JavaScript based user interface for controlling devices via tablet (i.e. wall mounted) or web browser. Due to its modular design it can be used in a variety of use-cases in which users should be able to invoke actions (i.e. smart lighting) via graphical user interface.
 
+## Getting Started / Preconditions
+
+To run this application it is mandatory that you fullfil following preconditions:
+
+- Webserver with working PHP installation (>7.4)
+
+Additionally if you want to access devices via ioBroker:
+
+- ioBroker
+- ioBroker REST API
+
+## Limitations
+
+As this project is still in a very early stage and furthermore is besopken for my personal needs it may not be the best choice for you. This is especially true if you are searching for a solution including a visual designer.
+
+For getting the most out of this project for you, it will also be neccessary to create additional media (i.e. floorplans) with third-party software and include it to your installation. 
+
 ## ioBroker Adapter
 
 This terminal DOES NOT include any direct interfaces to smart home devices. However it has an adapter for the ioBroker-API and therefore can access all devices that are compatible with that. The adapter can be used after activating the REST-API on your ioBroker installation and change the information in adapters/ioBroker.adapter.js:
@@ -14,6 +31,39 @@ this.addEventListener("load", function () {
     Adapters.iobroker = new iobroker('https://my.iobroker.api', '8087');
 
 });
+```
+
+### Invoke API Action
+
+If you want to control a ioBroker provided smart home device with this UI you can i.e. set up a canvas module with a group of buttons controlling the devices via _action_-tag:
+
+```
+{
+    "title": "My Room",
+    "type": "buttongroup",
+    "left": "35%",
+    "top": "75%",
+    "controls": [
+        {
+            "type": "switch",
+            "id": "switch-my-room",
+            "binding": "hue.0.light1",
+            "bindingProvider": "iobroker",
+            "img": "img/icons/switch.svg",
+            "action": "sendDefaultRequest('trigger', { deviceId: 'hue.0.light1' }, this, 'KEY1');"
+        },
+        {
+            "type": "select",
+            "img": "img/icons/scene_eat.svg",
+            "action": "sendDefaultRequest('scene', { sceneId: 'hue.0.scene_1' }, this, 'SCENE');"
+        },
+        {
+            "type": "select",
+            "img": "img/icons/scene_bright.svg",
+            "action": "sendDefaultRequest('scene', { sceneId: 'hue.0.scene_2' }, this, 'SCENE');"
+        }
+    ]
+}
 ```
 
 ## Configuration
@@ -70,7 +120,7 @@ The UI can be assembled using different modules (news, weather, canvas,...). The
 
 <p align="center">
     <img src="doc/img/screenshot-main.png" alt="Screenshot of main view" width="450">
-    Screenshot of main view with news and weather
+    <p align="center">#####Screenshot of main view with news and weather</p>
 </p>
 
 A module is called by the "module"-tag (i.e. "canvas.module"). Its properties are specified in the "moduleProperties"-area. For better maintenance and transparency it is useful to put these in external files via "__external"-tag. These files must be stored in the "/config" folder. The "/config" folder must be created and is not part of the distribution.
@@ -102,7 +152,7 @@ With the _canvas module_ you can arrange different types of user controls on a c
 
 <p align="center">
     <img src="doc/img/screenshot-floorplan.png" alt="Screenshot of floorplan" width="450">
-    Screenshot of floorplan using canvas module
+    <p align="center">#####Screenshot of floorplan using canvas module</p>
 </p>
 
 ## Weather Module
@@ -127,3 +177,6 @@ The Weather Module is based on the "DasWetter" adapter in ioBroker and needs a v
 }
 ```
 
+## Contact
+
+If you want to get in contact with me, ask for features or contribute to this project, please feel free to do so via GitHub.
