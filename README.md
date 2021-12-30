@@ -17,7 +17,7 @@ Additionally if you want to access devices via ioBroker:
 
 ## Limitations
 
-As this project is still in a very early stage and furthermore is besopken for my personal needs it may not be the best choice for you. This is especially true if you are searching for a solution including a visual designer.
+As this project is still in a very early stage and furthermore is bespoken for my personal needs it may not be the best choice for you. This is especially true if you are searching for a solution including a visual designer.
 
 For getting the most out of this project for you, it will also be neccessary to create additional media (i.e. floorplans) with third-party software and include it to your installation. 
 
@@ -131,14 +131,14 @@ A module is called by the __module__-tag (i.e. "canvas.module"). Its properties 
 "module": "canvas.module",
 "conditions": [
     {
-        "binding": "alexa2.0.Echo-Devices.G090LA09751703CL.Player.currentState",
+        "binding": "alexa2.0.Echo-Devices.XXX.Player.currentState",
         "value": false,
         "style": {
             "visibility": "visible"
         }
     },
     {
-        "binding": "alexa2.0.Echo-Devices.G090LA09751703CL.Player.currentState",
+        "binding": "alexa2.0.Echo-Devices.XXX.Player.currentState",
         "value": true,
         "style": {
             "visibility": "hidden"
