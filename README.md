@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The _Smart Home UI_ is a PHP/JavaScript based user interface for controlling devices via tablet (i.e. wall mounted) or web browser. Due to its modular design it can be used in a variety of use-cases in which users should be able to invoke actions (i.e. smart lighting) via graphical user interface.
+The *Smart Home UI* is a PHP/JavaScript based user interface for controlling devices via tablet (i.e. wall mounted) or web browser. Due to its modular design it can be used in a variety of use-cases in which users should be able to invoke actions (i.e. smart lighting) via graphical user interface.
 
 ## Getting Started / Preconditions
 
@@ -23,7 +23,7 @@ For getting the most out of this project for you, it will also be neccessary to 
 
 ## ioBroker Adapter
 
-This terminal DOES NOT include any direct interfaces to smart home devices. However it has an adapter for the ioBroker-API and therefore can access all devices that are compatible with that. The adapter can be used after activating the REST-API on your ioBroker installation and change the information in adapters/ioBroker.adapter.js:
+This terminal DOES NOT include any direct interfaces to smart home devices. However it has an adapter for the ioBroker-API and therefore can access all devices that are compatible with that. The adapter can be used after activating the REST-API on your ioBroker installation and change the information in *adapters/ioBroker.adapter.js*:
 
 ```
 this.addEventListener("load", function () {
@@ -35,7 +35,7 @@ this.addEventListener("load", function () {
 
 ### Invoke API Action
 
-If you want to control a ioBroker provided smart home device with this UI you can i.e. set up a canvas module with a group of buttons controlling the devices via _action_-tag:
+If you want to control a ioBroker provided smart home device with this UI you can i.e. set up a canvas module with a group of buttons controlling the devices via *action*-tag:
 
 ```
 {
@@ -68,9 +68,9 @@ If you want to control a ioBroker provided smart home device with this UI you ca
 
 ## Configuration
 
-The configuration of the UI takes place in JSON files. The starting point for every installation is the _config.json_ file in the root folder. You will find a "config.example.json" file to begin with (rename required). 
+The configuration of the UI takes place in JSON files. The starting point for every installation is the *config.json* file in the root folder. You will find a *config.example.json* file to begin with (rename required). 
 
-The config file defines the views that are stored in the _/views_ folder. The view configuration can be also divided into several files for better maintenance. The sub-configs, which can be referenced by the '__external' tag are stored in the _/config_ folder.
+The config file defines the views that are stored in the */views* folder. The view configuration can be also divided into several files for better maintenance. The sub-configs, which can be referenced by the '__external' tag are stored in the */config* folder.
 
 ### Main Configuration (config.json)
 
@@ -116,14 +116,14 @@ The config file defines the views that are stored in the _/views_ folder. The vi
 
 ## Canvas Module
 
-The UI can be assembled using different modules (news, weather, canvas,...). The modules can be found in the _/modules_ folder and included in the modules-area in a views config file.  
-
+The UI can be assembled using different modules (news, weather, canvas,...). The modules can be found in the */modules* folder and included in the modules-area in a views config file.  
+<br/>
 <p align="center">
     <img src="doc/img/screenshot-main.png" alt="Screenshot of main view" width="450">
-    <p align="center">#####Screenshot of main view with news and weather</p>
+    <p align="center">Screenshot of main view with news and weather</p>
 </p>
-
-A module is called by the "module"-tag (i.e. "canvas.module"). Its properties are specified in the "moduleProperties"-area. For better maintenance and transparency it is useful to put these in external files via "__external"-tag. These files must be stored in the "/config" folder. The "/config" folder must be created and is not part of the distribution.
+<br/>
+A module is called by the *module*-tag (i.e. "canvas.module"). Its properties are specified in the *moduleProperties*-area. For better maintenance and transparency it is useful to put these in external files via *__external*-tag. These files must be stored in the "/config" folder. The */config* folder must be created and is not part of the distribution.
 
 ```
 "module": "canvas.module",
@@ -148,13 +148,13 @@ A module is called by the "module"-tag (i.e. "canvas.module"). Its properties ar
 }
 ```
 
-With the _canvas module_ you can arrange different types of user controls on a canvas. This gives you the ability to create floorplans with buttons to control particular smart home devices that are connected via ioBroker or any other adapter. 
-
+With the *canvas module* you can arrange different types of user controls on a canvas. This gives you the ability to create floorplans with buttons to control particular smart home devices that are connected via ioBroker or any other adapter. 
+<br/>
 <p align="center">
     <img src="doc/img/screenshot-floorplan.png" alt="Screenshot of floorplan" width="450">
-    <p align="center">#####Screenshot of floorplan using canvas module</p>
+    <p align="center">Screenshot of floorplan using canvas module</p>
 </p>
-
+<br/>
 ## Weather Module
 
 The Weather Module is based on the "DasWetter" adapter in ioBroker and needs a valid (free) subscription of this weather API. Please see following configuration example to see how the module works. 
