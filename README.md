@@ -195,7 +195,7 @@ The lock screen also provides the ability to include modules like widgets.
 
 <br/>
 <p align="center">
-    <img src="doc/img/screenshot-main.png" alt="Screenshot of main view" width="450">
+    <img src="doc/img/screenshot-lock.png" alt="Screenshot of main view" width="450">
     <p align="center">Screenshot of lock screen with some modules as widgets</p>
 </p>
 <br/>
