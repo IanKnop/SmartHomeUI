@@ -13,9 +13,9 @@
 // SETTING CONSTANTS
 const REFRESH_FREQUENCY      = 100;  // 100 = 10 times per second
 const DATA_REFRESH_FREQUENCY = 50;   // 50  = every 5 seconds trigger API call
+const DEFAULT_ADAPTER        = 'iobroker';     
 
 // GLOBAL PROPERTIES
-const DEFAULT_ADAPTER       = 'iobroker';     
 var Adapters = {};
 var AdapterBindings = [];
 var AdapterControls = [];
@@ -256,7 +256,7 @@ function getProviderBindings(objectsArray, provider = 'iobroker') {
     Gets all provider based control bindings                              */
 
     var returnArray = [];
-    objectsArray.forEach(item => { if (item.provider == provider) returnArray.push(item.binding) });
+    objectsArray.forEach(item => { if (item.provider == provider && !returnArray.includes(item.binding)) returnArray.push(item.binding) });
     return returnArray;
 }
 

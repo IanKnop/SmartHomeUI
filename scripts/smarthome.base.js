@@ -350,6 +350,12 @@ function sendInterfaceRequest(url, data, returnFunction = null, paramValue = nul
     Send interface request as JSON object                                */
 
     var httpRequest = new XMLHttpRequest();
+    
+    httpRequest.timeout = 250;
+    httpRequest.ontimeout = function (a) {
+
+        returnFunction([]);
+    };
 
     httpRequest.onreadystatechange = function () {
         if (returnFunction != null && this.readyState == 4 && this.status == 200) {
@@ -443,3 +449,7 @@ function urlDecode(inputString) {
     return decodeURIComponent(inputString.replace(/\+/g, ' '));
 }
 
+function Sleep(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+   }
+   
