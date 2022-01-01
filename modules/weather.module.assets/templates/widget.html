@@ -1,9 +1,8 @@
 <div id="{{[id]}}.content" cc-update="true" cc-provider="weather">
     {{[IF:showTitle:<div id="{[id]}.day" class="cc-weather-day" cc-binding="{[day]}" {[provider]} cc-prefix="Vorhersage für " cc-suffix="" cc-update="true" cc-type="text"></div>
-    <div class="cc-weather-text" cc-binding="{[weather-text]}" {[provider]} cc-update="true" cc-type="text"></div>]}}
-
+    <div id="{{[id]}}.weather-text" class="cc-weather-text" cc-binding="{[weather]}" {[provider]} cc-update="true" cc-type="text"></div>]}}
     <div id="{{[id]}}.weather-temp-max" class="cc-weather-temp" style="{{[temp_style]}}" cc-binding="{{[max_temp]}}" {{[provider]}} cc-suffix="&deg;" cc-update="true" cc-type="text"></div>
     <div id="{{[id]}}.weather-temp-min" class="cc-weather-min-temp" style="{{[mintemp_style]}}" cc-binding="{{[min_temp]}}" {{[provider]}} cc-prefix="mindestens " cc-suffix="&deg; C" cc-update="true" cc-type="text"></div>
-    <div id="{{[id]}}.weather-wind" class="cc-weather-wind" cc-binding="{{[wind-text]}}" {{[provider]}} cc-update="true" cc-type="text"></div>
+    <div id="{{[id]}}.weather-wind" class="cc-weather-wind" cc-binding="{{[wind]}}" {{[provider]}} cc-update="true" cc-type="text"></div>
     <div class="cc-weather-icon"><img id="{{[id]}}.weather-icon" style="margin: auto; {{[icon_style]}}" cc-binding="{{[icon_url]}}" {{[provider]}} cc-prefix="{{[icon_prefix]}}" cc-suffix="{{[icon_suffix]}}" cc-update="true" cc-type="src" alt></img></div>
 </div>

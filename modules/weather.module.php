@@ -26,18 +26,18 @@ class Weather extends Module implements IModule {
         $Content .= Views::parseTemplate('weather', 'templates/widget', array(
                         "id"            => @Util::val($this->Id, rand(1000000, 9999999)),
                         "provider"      => @Util::val($this->VariantProperties->bindingProvider, '', 'cc-provider="', '" '),
-                        "max_temp"      => @Util::val($this->VariantProperties->max_temp, ''),
-                        "min_temp"      => @Util::val($this->VariantProperties->min_temp, ''),
-                        "day"           => @Util::val($this->VariantProperties->day, ''),
-                        "text"          => @Util::val($this->VariantProperties->weather_text, ''),
-                        "wind"          => @Util::val($this->VariantProperties->wind_text, ''),
-                        "showTitle"     => (!isset($this->VariantProperties->showWeatherTitle) || $this->VariantProperties->showWeatherTitle == true),
-                        "icon_style"    => @Util::val($this->VariantProperties->iconstyle, ''),
-                        "temp_style"    => @Util::val($this->VariantProperties->tempstyle, ''),
-                        "mintemp_style" => @Util::val($this->VariantProperties->mintempstyle, ''),
-                        "icon_url"      => @Util::val($this->VariantProperties->icon_url, ''),
-                        "icon_prefix"   => @Util::val($this->VariantProperties->icon_url_prefix, ''),
-                        "icon_suffix"   => @Util::val($this->VariantProperties->icon_url_suffix, '')
+                        "showTitle"     => (isset($this->Source->showWeatherTitle) ? boolval($this->Source->showWeatherTitle) : true),            
+                        "max_temp"      => @Util::val($this->VariantProperties->maxTempBinding, ''),
+                        "min_temp"      => @Util::val($this->VariantProperties->minTempBinding, ''),
+                        "day"           => @Util::val($this->VariantProperties->currentDayBinding, ''),
+                        "weather"       => @Util::val($this->VariantProperties->weatherBinding, ''),
+                        "wind"          => @Util::val($this->VariantProperties->windBinding, ''),
+                        "temp_style"    => @Util::val($this->Source->tempStyle, ''),
+                        "icon_style"    => @Util::val($this->Source->iconStyle, ''),
+                        "mintemp_style" => @Util::val($this->Source->minTempStyle, ''),
+                        "icon_url"      => @Util::val($this->VariantProperties->iconUrlBinding, ''),
+                        "icon_prefix"   => @Util::val($this->VariantProperties->iconUrlPrefix, ''),
+                        "icon_suffix"   => @Util::val($this->VariantProperties->iconUrlSuffix, '')
                     ));
 
         return (strtolower($Target) == 'content' ? $Content : parent::parseModule($Content));

@@ -35,15 +35,18 @@ class Views {
                     // {{[IF:VAR:RETURN_STRING]}}
                     $ArgProperty = explode(':', $Expression)[1];
                     $Value = substr($Expression, strpos($Expression, ':', strpos($Expression, $ArgProperty) - 1) + strlen($ArgProperty) + 2);
-
+                    
                     if (isset($Args[$ArgProperty]) && ($Args[$ArgProperty] == true || $Args[$ArgProperty] == 1 || $Args[$ArgProperty] == "1" || strtolower($Args[$ArgProperty]) == 'true')) {
                         
                         // RENAMING TAGS INSIDE OF IF-CLAUSE FROM '{[...]}' TO '{{[...]}}'
+
                         $ReturnValue = str_replace('{{[' . $Expression . ']}}', str_replace('{[', '{{[', str_replace(']}', ']}}', $Value)), $ReturnValue);    
+
                     } else {
 
                         // FALSE
                         $ReturnValue = str_replace('{{[' . $Expression . ']}}', '', $ReturnValue);    
+                       
                     }
                 }
                 else
