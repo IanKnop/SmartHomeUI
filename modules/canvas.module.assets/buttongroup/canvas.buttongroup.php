@@ -191,7 +191,7 @@ class ButtonGroup implements ICanvasControl {
         if (isset($Control->view) && (!isset($Control->view->target) || strtolower($Control->view->target) == 'self')) {
 
             // INSERT LINK TO OTHER VIEW
-            $Properties['events'] = 'onclick="showView(\'' . @Util::val($Control->view->source) . '\'' . Util::val($Control->view->variant, '', ', \'', '\'') . ')"';
+            $Properties['events'] = 'onclick="SmartHomeUI.showView(\'' . @Util::val($Control->view->source) . '\'' . Util::val($Control->view->variant, '', ', \'', '\'') . ')"';
             $Properties['windows'] = '';
         
         } else {
@@ -199,7 +199,7 @@ class ButtonGroup implements ICanvasControl {
             // OPEN VIEW AS WINDOW
             $Window = new View($Control->view);
 
-            $Properties['events'] = 'onclick="openWindow(\'' . $Window->Id . '\');"';
+            $Properties['events'] = 'onclick="SmartHomeUI.openWindow(\'' . $Window->Id . '\');"';
             $Properties['windows'] = $Window->getView(@Util::val($Control->view->variant, null), 'window');
         }
     }

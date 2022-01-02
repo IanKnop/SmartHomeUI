@@ -178,7 +178,7 @@ iobroker.prototype.getDatapoints = function (deviceIds, nextFunction, thisAdapte
     /* getDatapoints()_______________________________________________________
     Gets multiple ioBroker datapoint values of given ids                    */
 
-    sendInterfaceRequest(this.adapterLocation + '/getBulk/' + deviceIds + '/?', null, function (requestAnswer) {
+    SmartHomeUI.InterfaceRequest.send(this.adapterLocation + '/getBulk/' + deviceIds + '/?', null, function (requestAnswer) {
 
         nextFunction(requestAnswer, thisAdapter);
 
@@ -190,7 +190,7 @@ iobroker.prototype.getDatapoint = function (deviceId, nextFunction, thisAdapter 
     /* getDatapoint()________________________________________________________
     Gets ioBroker datapoint value of given id                               */
 
-    sendInterfaceRequest(this.adapterLocation + '/get/' + deviceId, null, function (requestAnswer) {
+    SmartHomeUI.InterfaceRequest.send(this.adapterLocation + '/get/' + deviceId, null, function (requestAnswer) {
 
         nextFunction(requestAnswer, thisAdapter);
 
@@ -204,7 +204,7 @@ iobroker.prototype.setDatapoint = function (deviceId, value = 'true', nextFuncti
 
     if (nextFunction != null) {
 
-        sendInterfaceRequest(this.adapterLocation + '/set/' + deviceId + '?value=' + value, null, function (requestAnswer, thisAdapter) {
+        SmartHomeUI.InterfaceRequest.send(this.adapterLocation + '/set/' + deviceId + '?value=' + value, null, function (requestAnswer, thisAdapter) {
 
             triggerAdapterUpdate();
             nextFunction(requestAnswer, thisAdapter);
@@ -213,7 +213,7 @@ iobroker.prototype.setDatapoint = function (deviceId, value = 'true', nextFuncti
 
     } else {
 
-        sendInterfaceRequest(this.adapterLocation + '/set/' + deviceId + '?value=' + value, URL_ENCODED);
+        SmartHomeUI.InterfaceRequest.send(this.adapterLocation + '/set/' + deviceId + '?value=' + value, URL_ENCODED);
 
     }
 }

@@ -9,7 +9,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <script>currentView = '{{[id]}}';</script>
-<body onload="initializeUserInterface()">
+<body onload="SmartHomeUI.initialize()">
 <div id="view-grid" class="grid" style="grid-template-columns: {{[columns]}}; grid-template-rows: {{[rows]}};"> 
     {{[header]}}
     {{[modules]}}
@@ -23,7 +23,7 @@
     <div id="cc-msgbox-text" style="font-size: 3.5vmin; line-height: 6vh; align-self: center; margin: auto;">
     </div>
     <div id="cc-msgbox-header">
-        <div id="cc-msgbox-close" style="visibility: collapse; position: absolute; top: 5%; right: 2.5%; cursor: pointer;" onclick="closeBox();">
+        <div id="cc-msgbox-close" style="visibility: collapse; position: absolute; top: 5%; right: 2.5%; cursor: pointer;" onclick="SmartHomeUI.MessageBox.close();">
             <img style="height: 3.5vh;" src="img/icons/cancel.svg">
         </div>
     </div>

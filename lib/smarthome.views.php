@@ -179,7 +179,7 @@ class View {
 
         $ReturnValue = '';
         foreach (Settings::get('views') as $View) if (isset($View->img) && $View->img != null && $View->img != '') {
-            $ReturnValue .= '<div class="view-button" onmousedown="showView(\'' . $View->id . '\')"><img src="' . $View->img . '" class="view-button-icon"/></div>';
+            $ReturnValue .= '<div class="view-button" onmousedown="SmartHomeUI.showView(\'' . $View->id . '\')"><img src="' . $View->img . '" class="view-button-icon"/></div>';
         }
         
         return $ReturnValue;

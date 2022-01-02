@@ -3,7 +3,7 @@
     Smart Home UI - Adapter Bindings
 
     (C) 2021 by Ian Knop, Weiterstadt, Germany
-    www.knop.family
+    https://github.com/IanKnop/SmartHomeUI/
     ========================================================= */
 
 /* =========================================================
@@ -77,7 +77,7 @@ function refreshStates(force = false) {
                 if (control.provider == undefined || control.provider == null || control.provider == 'null' || control.provider == '') control.provider = DEFAULT_ADAPTER;
                 
                 // UPDATE DATA AND REFRESH CONTROLS ON USER INTERFACE
-                if (control.provider.toLowerCase() == 'internal' || control.provider.toLowerCase() == 'cc-internal') control.control.innerHTML = parseExpressions(control.binding);
+                if (control.provider.toLowerCase() == 'internal' || control.provider.toLowerCase() == 'cc-internal') control.control.innerHTML = SmartHomeUI.parseExpressions(control.binding);
                 else Adapters[control.provider].refreshState(control, Date.now());
 
             });
@@ -198,7 +198,7 @@ function refreshControl(control, adapter) {
                 case 'select':
                 case 'scene':
         
-                    var controlProvider = (control.hasAttribute('cc-true') ? control.hasAttribute('cc-true') : DEFAULT_CONTROL_PROVIDER);
+                    var controlProvider = (control.hasAttribute('cc-true') ? control.hasAttribute('cc-true') : DEFAULT_CONTROL);
                     ControlProviders[controlProvider].updateActiveState(control, adapter.checkActiveState(bindValue, typeAttr));
                     break;
             }
@@ -220,7 +220,7 @@ function sendRequest(adapter, requestMode, payload, refreshControl = null, sound
     /* sendRequest()_______________________________________________________
     Sends request to specified adapter                                    */
 
-    if (sound != '') playSound(sound.toUpperCase());
+    if (sound != '') SmartHomeUI.Audio.playSound(sound.toUpperCase());
     Adapters[adapter].sendRequest(requestMode, payload, refreshControl, controlProvider, nextFunction);
 
 }

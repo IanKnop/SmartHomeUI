@@ -34,7 +34,7 @@ class ImageMap extends Module implements IModule {
             $ReturnValue .= Views::parseTemplate('imagemap', 'templates/area', array(
                 "class" => (isset($Area->invokeVariant) && $Area->invokeVariant == $this->Variant ? ' imagemap-link-active' : ''),
                 "style"  => Util::getStdStyles($Area),
-                "events" => (isset($Area->invokeVariant) ? 'onmousedown="showVariant(\'' . $Area->invokeVariant . '\');"  ontouchstart="showVariant(\'' . $Area->invokeVariant . '\');"' : '')));
+                "events" => (isset($Area->invokeVariant) ? 'onmousedown="SmartHomeUI.showVariant(\'' . $Area->invokeVariant . '\');"  ontouchstart="SmartHomeUI.showVariant(\'' . $Area->invokeVariant . '\');"' : '')));
     
         }
 
