@@ -166,13 +166,15 @@ var SmartHomeUI = new function() {
 
         // PROPERTIES
         this.activated = true;
-        this.delaySleep = 2;            // time in seconds until screen saver starts
-        this.delayDimming = 2;          // time in seconds until screen saver is dimmed (null if no dimming)
-        this.dimAfterHour = 23;         // time from which dimming is activated
-        this.dimBeforeHour = 6;         // time to which dimming stays aktivated
+        this.delaySleep = 30;                   // time in seconds until screen saver starts (should be >10)
+        this.delayDimming = 30;                 // time in seconds until screen saver is dimmed (null if no dimming)
+        this.dimAfterHour = 23;                 // time of the day from which dimming is activated
+        this.dimBeforeHour = 6;                 // time of the day until dimming stays aktivated
+        this.wallpaper = 'wallpaper-A.jpg';     // file must be located in "/img/wallpaper"
+        
+        // STATES PROPERTIES
         this.isWakingUp = false;
         this.isGoingToSleep = false;
-        this.wallpaper = 'wallpaper-A.jpg';
         
         // INTERNAL VARIABLES
         var sleepTimeoutHandle = null;
