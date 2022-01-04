@@ -220,6 +220,8 @@ function sendRequest(adapter, requestMode, payload, refreshControl = null, sound
     /* sendRequest()_______________________________________________________
     Sends request to specified adapter                                    */
 
+    if (adapter == null || adapter == '') adapter = DEFAULT_ADAPTER;
+
     if (sound != '') SmartHomeUI.Audio.playSound(sound.toUpperCase());
     Adapters[adapter].sendRequest(requestMode, payload, refreshControl, controlProvider, nextFunction);
 

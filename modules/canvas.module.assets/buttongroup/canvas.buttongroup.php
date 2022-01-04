@@ -7,132 +7,180 @@
     www.knop.family
     ========================================================= */
 
-class ButtonGroup implements ICanvasControl {
+class ButtonGroup implements ICanvasControl
+{
+
+    // DEFINITION SCOPES: element (for complete canvasElement), group, control, image, text
 
     const DEFAULT_CONTROL_TYPE = 'switch';
 
     public $ParentModule = null;
-    public function __construct($ParentModule) {
+    public function __construct($ParentModule)
+    {
 
         /* __construct()____________________________________________________________*/
 
         $this->ParentModule = $ParentModule;
     }
 
-    public function parseControl($Source, $Variant = null) {
+    public function parseControl($Source, $Variant = null)
+    {
 
-        /* getProgressBar()_________________________________________________________
-        Returns standard progress bar as canvas element                            */    
+        /* parseControl()___________________________________________________________
+        Returns button group as canvas element                                     */
 
-        $ControlClasses = (!isset($Source->classTarget) || $Source->classTarget == '' || (strtolower($Source->classTarget) == 'all' || strtolower($Source->classTarget) == 'control') ? @Util::val($Source->class, '', 'class="', '"') : '');
-        $GroupClasses = (isset($Source->classTarget) && (strtolower($Source->classTarget) == 'all' || strtolower($Source->classTarget) == 'group') ? @Util::val($Source->class) : '');
-        
-        return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup', 
+        return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup',
             array(
-                "style"     => Util::getStdStyles($Source), 
-                "class"     => $ControlClasses,
-                "header"    => Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.header', 
-                    array(
-                        "title"     => $Source->title, 
-                        "visible"   => !isset($Source->hideTitle) || !$Source->hideTitle)),
-                "content"   => isset($Source->controls) ? $this->getControls($Source, $GroupClasses) : '',
-                "footer"    => isset($Source->footer) ? $this->getFooter($Source) : ''));
+
+                /* Set canvas element classes and styles */
+                "element-style"     => Util::getStdStyles($Source),
+                "element-class"     => isset($Source->class) ? Util::getValueByScope($Source->class, 'element') : '',
+
+                /* Parse button group control */
+                "header"            => $this->getHeader($Source),
+                "content"           => isset($Source->controls) ? $this->getControls($Source) : '',
+                "footer"            => isset($Source->footer) ? $this->getFooter($Source) : ''
+            )
+
+        );
     }
 
-    private function getControls($CanvasElement, $GroupClasses = '') {
+    private function getControls($Source)
+    {
 
         /* getControls()_____________________________________________________________
-        Returns stack of controls for canvas element group                          */    
+        Returns stack of controls for button group                                  */
 
-        $InnerHTML = ''; $ControlIndex = 0; $ControlCount = sizeof($CanvasElement->controls);
-        foreach ($CanvasElement->controls as $Control) $InnerHTML .= $this->getControl($Control, $ControlIndex, $ControlCount);
-        
-        return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.elements', 
+        $InnerHTML = '';
+        $ControlIndex = 0;
+        foreach ($Source->controls as $Control) $InnerHTML .= $this->getControl($Control, $ControlIndex, sizeof($Source->controls));
+
+        return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.elements',
             array(
-                "content" => $InnerHTML,
-                "classes" => $GroupClasses));
-    }    
-
-    private function getControl($Control, &$ControlIndex, $ControlCount) {
-        
-        /* getControl()______________________________________________________________
-        Returns control                                                             */    
-        
-        // GENERAL PROPERTIES
-        $ControlIndex++;
-        $Properties = array(
-            "id"                => @Util::val($Control->id, $this->getControlType($Control->type) . '-' . rand(1000000, 9999999)),
-            "binding"           => @Util::val($Control->binding),
-            "binding-provider"  => @Util::val($Control->bindingProvider, '', 'cc-provider="', '" '),
-            "class"             => $this->getControlType($Control->type) . '-control ',
-            "events"            => isset($Control->action) ? Base::getClickEvent(Base::replaceProperties($Control->action, $Control)) : '',
-            "value"             => '',
-            "styles"            => @Util::val($Control->styles),   
-            "update"            => 'false'
+                "content"           => $InnerHTML,
+                "group-class"       => (isset($Source->class) ? Util::getValueByScope($Source->class, 'group', false) : '')
+            )
         );
+    }
 
-        // CONTROL SPECIFIC PROPERTIES
-        switch ($this->getControlType($Control->type)) {
+    private function getControl($Control, &$ControlIndex, $ControlCount)
+    {
 
-            case 'navigate':                
-                $this->getNavigate($Control, $Properties); 
+        /* getControl()______________________________________________________________
+        Returns control                                                             */
 
-            case 'select': case 'switch':
-                $this->getButton($Control, $ControlIndex, $ControlCount, $Properties); 
-                break;
-                
-            case 'value':
-                $this->getLabel($Control, $Properties); 
-                break; 
-        }
-        
+        $ControlIndex++;
+        $Properties =
+            array(
+                "id"                => @Util::val($Control->id, $this->getControlType($Control->type) . '-' . rand(1000000, 9999999)),
+
+                /* Set binding (Id) and binding provider (if set) */
+                "binding"           => @Util::val($Control->binding),
+                "binding-provider"  => @Util::val($Control->bindingProvider, '', 'cc-provider="', '" '),
+
+                /* Set standard control class ([type]-class) and any additionally defined classes and styles */
+                "control-class"     => $this->getControlType($Control->type) . '-control ' . 
+                                       $this->getLocationBasedClasses($ControlCount, $ControlIndex) . 
+                                       (isset($Control->class) ? Util::getValueByScope($Control->class, 'control') . ' ' : ''),
+
+                "control-style"     => isset($Control->style) ? Util::getValueByScope($Control->style, 'control') . ' ' : '',
+
+                /* Set script events and update behaviour */
+                "events"            => $this->getEventFromAction($Control),
+                "update"            => 'false'
+            );
+
         // RETURN CONTROL BASED ON PROPERTIES
+        $this->getTypeBasedProperties($Control, $Properties, $ControlIndex, $ControlCount);
+
         return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.controls/' . $this->getControlType($Control->type), $Properties);
     }
-    
-    private function getControlType($TypeId) {
+
+    private function getEventFromAction($Control) {
+
+        /* getEventFromAction()______________________________________________________
+        Returns JavaScript function for given property based action definition      */
+
+        if (isset($Control->action) && !is_string($Control->action)) {
+            
+            $Action = $Control->action;
+            return Base::getClickEvent('sendRequest(\'' . @Util::val($Action->adapter) . '\', \'' . @Util::val($Action->method, 'trigger') . '\', ' . (isset($Action->payload) ? htmlentities(Base::replaceProperties(json_encode($Action->payload), $Control)) : '{ }') . ', this, \'' . @Util::val($Action->sound) . '\');');
+
+        } else if (isset($Control->action)) {
+
+            return Base::getClickEvent(Base::replaceProperties($Control->action, $Control));
+        
+        } else {
+
+            return '';
+        }
+
+    }
+
+    private function getControlType($TypeId)
+    {
 
         /* getControlType()__________________________________________________________
-        Returns inner control type based on type name (i.e. text -> value)          */   
+        Returns inner control type based on type name (i.e. text -> value)          */
 
         if ($TypeId == 'text' || $TypeId == 'numeric' || $TypeId == 'date' || $TypeId == 'time' || $TypeId == 'html') return 'value';
         else if ($TypeId != '') return strtolower($TypeId);
         else return self::DEFAULT_CONTROL_TYPE;
     }
 
-    private function getFooter($CanvasElement) {
+    private function getHeader($CanvasElement)
+    {
 
-        /* getFooter()_______________________________________________________________
-        Returns footer for canvas element                                           */    
+        /* getHeader()_______________________________________________________________
+        Returns header for button group                                             */
 
-        return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.footer', 
+        return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.header',
             array(
-                "small"     => isset($CanvasElement->smallFooter) && $CanvasElement->smallFooter, 
-                "content"   => $this->getFooterValues($CanvasElement)));
+                "title"     => @Util::val($CanvasElement->title, ''),
+                "visible"   => (!isset($CanvasElement->hideTitle) && isset($CanvasElement->title)) || isset($CanvasElement->hideTitle) && !$CanvasElement->hideTitle
+            )
+        );
     }
 
-    private function getFooterValues($CanvasElement) {
+    private function getFooter($CanvasElement)
+    {
+
+        /* getFooter()_______________________________________________________________
+        Returns footer for canvas element                                           */
+
+        return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.footer',
+            array(
+                "small"     => isset($CanvasElement->smallFooter) && $CanvasElement->smallFooter,
+                "content"   => $this->getFooterValues($CanvasElement)
+            )
+        );
+    }
+
+    private function getFooterValues($CanvasElement)
+    {
 
         /* getFooterValues()_________________________________________________________
-        Returns values for canvas element footer                                    */  
+        Returns values for canvas element footer                                    */
 
         $ReturnValue = '';
         foreach ($CanvasElement->footer as $ValueSource) {
 
-            $ReturnValue .= Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.footer-value', 
+            $ReturnValue .= Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.footer-value',
                 array(
-                    "id"          => @Util::val($ValueSource->id, 'footerValue-' . rand(1000,9999)),
-                    "small"       => isset($CanvasElement->smallFooter) && $CanvasElement->smallFooter, 
-                    "style"       => Util::getStdStyles($ValueSource),
-                    "type"        => @Util::val($ValueSource->type, 'numeric'),
-                    "prefix"      => @Util::val($ValueSource->prefix, '', 'cc-prefix="', '"'),
-                    "suffix"      => @Util::val($ValueSource->suffix, '', 'cc-suffix="', '"'),
-                    "decimals"    => @Util::val($ValueSource->decimals, '', 'cc-decimals="', '"'),
-                    "offset"      => @Util::val($ValueSource->offset, '', 'cc-offset="', '"'),
-                    "update"      => (isset($ValueSource->binding) && trim($ValueSource->binding) != '' ? 'cc-update="true"' : ''),
-                    "binding"     => @Util::val($ValueSource->binding, '', 'cc-binding="', '"'),
-                    "provider"    => @Util::val($ValueSource->bindingProvider, '', 'cc-provider="', '"')
-                    ));
+                    /* Set footer base information */
+                    "id"                => @Util::val($ValueSource->id, 'footerValue-' . rand(1000, 9999)),
+                    "binding"           => @Util::val($ValueSource->binding, '', 'cc-binding="', '"'),
+                    "binding-provider"  => @Util::val($ValueSource->bindingProvider, '', 'cc-provider="', '"'),
+                    "is-small"          => isset($CanvasElement->smallFooter) && $CanvasElement->smallFooter,
+                    "value-style"       => Util::getStdStyles($ValueSource),
+                    "type"              => @Util::val($ValueSource->type, 'numeric'),
+                    "prefix"            => @Util::val($ValueSource->prefix, '', 'cc-prefix="', '"'),
+                    "suffix"            => @Util::val($ValueSource->suffix, '', 'cc-suffix="', '"'),
+                    "decimals"          => @Util::val($ValueSource->decimals, '', 'cc-decimals="', '"'),
+                    "offset"            => @Util::val($ValueSource->offset, '', 'cc-offset="', '"'),
+                    "update"            => (isset($ValueSource->binding) && trim($ValueSource->binding) != '' ? 'cc-update="true"' : '')
+                )
+            );
         }
 
         return $ReturnValue;
@@ -142,58 +190,109 @@ class ButtonGroup implements ICanvasControl {
         BUTTON GROUP CONTROLS 
        ========================================================= */
 
-    private function getButton($Control, $ControlIndex, $ControlCount, &$Properties) {
+    private function getTypeBasedProperties($Control, &$Properties, &$ControlIndex, $ControlCount)
+    {
+
+        /* getTypeBasedProperties()___________________________________________________
+        Adds control specific properties to $Properties                             */
+
+        switch ($this->getControlType($Control->type)) {
+
+            case 'navigate':
+                $this->getNavigate($Control, $Properties);
+
+            case 'select':
+            case 'switch':
+            case 'button':
+                $this->getButton($Control, $ControlIndex, $ControlCount, $Properties);
+                break;
+            
+            case 'value':
+                $this->getLabel($Control, $Properties);
+                break;
+        }
+    }
+
+    private function getLocationBasedClasses($ControlCount, $ControlIndex)
+    {
+
+        /* getLocationBasedClasses()_________________________________________________
+        Returns classes based on position in button group (i.e. rounded corners)    */
+
+        return ($ControlCount == 1 ? 'single-button ' : Base::getEdgeValue($ControlIndex, $ControlCount, 'group-button-left ', 'group-button-center ', 'group-button-right '));
+    }
+
+    private function getButton($Control, $ControlIndex, $ControlCount, &$Properties)
+    {
 
         /* getButton()_______________________________________________________________
-        Returns properties for button in button group                               */  
-
-        $Properties['class'] .= ($ControlCount == 1 ? 'single-button ' : Base::getEdgeValue($ControlIndex, $ControlCount, 'group-button-left ', 'group-button-center ', 'group-button-right '));
+        Returns properties for button in button group                               */
         
-        if (isset($Control->class)) $Properties['class'] .= ' ' . $Control->class;
+        $ImageSource = (isset($Control->style->img) ? $Control->style->img : $Control->img);
+        $Properties = array_merge($Properties,
+            array(
+                "img"               => @Util::val($ImageSource, '', 'background-image: url(', ');'),
+                "text"              => @Util::val($Control->text),
 
-        $Properties = array_merge($Properties, array(
-            "img"               => @Util::val($Control->img),
-            "events"            => ($Properties['events'] == '' ? Base::getClickEvent('triggerSwitch(\'' . $Properties['binding'] . '\', this);') : $Properties['events']),
-            "update"            => (strtolower($Control->type) == 'switch' ? 'true' : 'false'),
-            "cc-true"           => @Util::val((is_array($Control->trueIf) ? htmlentities(json_encode($Control->trueIf)) : $Control->trueIf), '', 'cc-true="', '"'),
-            "cc-color"          => @Util::val($Control->trueColor, '', 'cc-color="', '"'),
-            "indicator-class"   => 'indicator ' . (isset($Control->trueColor) ? 'indicator-' . strtolower($Control->trueColor) : ''),
-            "indicator-visible" => 'hidden'
-        ));
+                /* Set classes and styles for image and/or text content */
+                "content-class"     => (isset($ImageSource) ? 'button-image ' : '') . (isset($Control->class) ? Util::getValueByScope($Control->class, 'content', false) : ''),
+                "text-class"        => isset($Control->class) ? Util::getValueByScope($Control->class, 'text', false) : '',
+                "image-class"       => isset($Control->class) ? Util::getValueByScope($Control->class, 'image', false) : '',
+                "content-style"     => isset($Control->style) ? Util::getValueByScope($Control->style, 'content', false) : '',
+                
+                /* Set script events and update behaviour */
+                "events"            => ($Properties['events'] == '' ? Base::getClickEvent('triggerSwitch(\'' . $Properties['binding'] . '\', this);') : $Properties['events']),
+                "update"            => (strtolower($Control->type) == 'switch' ? 'true' : 'false'),
+                
+                /* Set axtivation behaviour and indicator style */
+                "cc-true"           => @Util::val((is_array($Control->trueIf) ? htmlentities(json_encode($Control->trueIf)) : $Control->trueIf), '', 'cc-true="', '"'),
+                "cc-color"          => @Util::val($Control->trueColor, '', 'cc-color="', '"'),
+                "indicator-class"   => 'indicator ' . (isset($Control->trueColor) ? 'indicator-' . strtolower($Control->trueColor) : ''),
+                "indicator-visible" => 'hidden'
+            )
+        );
     }
 
-    private function getLabel($Control, &$Properties) {
+    private function getLabel($Control, &$Properties)
+    {
 
         /* getLabel()________________________________________________________________
-        Returns properties for label in button group (replacing button)             */  
+        Returns properties for label in button group (replacing button)             */
 
         if (isset($Control->class)) $Properties['class'] .= ' ' . $Control->class;
-        $Properties = array_merge($Properties, array(
-            "update"            => (!isset($Control->binding) ? 'true' : 'true'),
-            "style"             => @Util::val($Control->style, ''),
-            "labelstyle"        => @Util::val($Control->labelstyle, ''),
-            "labelclass"        => @Util::val($Control->labelclass, ''),
-            "suffix"            => @Util::val($Control->suffix, '', 'cc-suffix="', '"'),
-            "type"              => @Util::val($Control->type, 'numeric'),
-            "prefix"            => @Util::val($Control->prefix, '', 'cc-prefix="', '"'),
-            "decimals"          => @Util::val($Control->decimals, '', 'cc-decimals="', '"'),
-            "value"             => @Util::val($Control->value, '', 'cc-value="', '"'),
-            "formatvalue"       => (!isset($Control->binding) ? @Util::val($Control->value, '') : $this->ParentModule->getFormattedValue($Control->binding, @Util::val($Control->decimals, 0), @Util::val($Control->suffix), @Util::val($Control->prefix)))
-        ));
+
+        $Properties = array_merge($Properties,
+            array(
+                /* Set value type and systematic */
+                "type"              => @Util::val($Control->type, 'numeric'),
+                "value"             => @Util::val($Control->value, '', 'cc-value="', '"'),
+                "min"               => @Util::val($Control->min, '', 'cc-min="', '"'),
+                "max"               => @Util::val($Control->max, '', 'cc-max="', '"'),
+                "suffix"            => @Util::val($Control->suffix, '', 'cc-suffix="', '"'),
+                "prefix"            => @Util::val($Control->prefix, '', 'cc-prefix="', '"'),
+                "decimals"          => @Util::val($Control->decimals, '', 'cc-decimals="', '"'),
+                "format-value"      => @Util::val((isset($Control->decimals) ? number_format($Control->value, $Control->decimals, ',', '.') : $Control->value), '', @Util::val($Control->prefix), @Util::val($Control->suffix)),
+
+                /* Set classes and styles for label */
+                "content-class"     => isset($Control->class) ? Util::getValueByScope($Control->class, 'content', false) : '',
+                "content-style"     => isset($Control->style) ? Util::getValueByScope($Control->style, 'content', false) : '',
+                "update"            => (!isset($Control->binding) ? 'true' : 'true')
+            )
+        );
     }
 
-    private function getNavigate($Control, &$Properties) {
+    private function getNavigate($Control, &$Properties)
+    {
 
         /* getNavigate()_____________________________________________________________
-        Returns properties for button with ability to open window with view content */  
+        Returns properties for button with ability to open window with view content */
 
-        if (isset($Control->class)) $Properties['class'] .= ' ' . $Control->class;
+        if (isset($Control->class)) $Properties['control-class'] .= ' ' . $Control->class;
         if (isset($Control->view) && (!isset($Control->view->target) || strtolower($Control->view->target) == 'self')) {
 
             // INSERT LINK TO OTHER VIEW
             $Properties['events'] = 'onclick="SmartHomeUI.showView(\'' . @Util::val($Control->view->source) . '\'' . Util::val($Control->view->variant, '', ', \'', '\'') . ')"';
             $Properties['windows'] = '';
-        
         } else {
 
             // OPEN VIEW AS WINDOW
@@ -203,5 +302,4 @@ class ButtonGroup implements ICanvasControl {
             $Properties['windows'] = $Window->getView(@Util::val($Control->view->variant, null), 'window');
         }
     }
-
 }

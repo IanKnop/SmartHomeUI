@@ -47,6 +47,17 @@ class Util {
         return $ReturnValue;
     }
 
+    public static function getValueByScope($ValueCollection, $Scope, $ReturnScopeless = true) {
+
+        /* getValueByScope()__________________________________________________
+        Returns value of key/value-list representing scope                   */    
+
+        if ($ValueCollection == null) return '';
+        else if (is_string($ValueCollection)) return ($ReturnScopeless ? $ValueCollection : '');
+        else if (isset($ValueCollection->{strtolower($Scope)})) return $ValueCollection->{strtolower($Scope)};
+        else return '';
+
+    }
 
     public static function startsWith($Haystack, $Needle)
     {
@@ -231,7 +242,11 @@ class Util {
         /* getStdStyles()_____________________________________________________
         Returns style string based on object with position and size          */  
 
-        return (isset($Style->height) ? 'height: ' . $Style->height . '; ' : '')  . 
+        if (isset($Style->style) && !is_string($Style->style) && $Style->style != null) return self::getStdStyles($Style->style);
+        else if (isset($Style->styles) && !is_string($Style->styles) && $Style->styles != null) return self::getStdStyles($Style->styles);
+        else {
+
+            return (isset($Style->height) ? 'height: ' . $Style->height . '; ' : '')  . 
             (isset($Style->width) ? 'width: ' . $Style->width . '; ' : '')  . 
             (isset($Style->top) ? 'top: ' . $Style->top . '; ' : '') . 
             (isset($Style->bottom) ? 'bottom: ' . $Style->bottom . '; ' : '') . 
@@ -241,6 +256,8 @@ class Util {
             (isset($Style->align) && strtolower($Style->align) == 'right' ? 'right: 0; ' : '') . 
             (isset($Style->style) ? $Style->style . '; ' : '') .
             (isset($Style->styles) ? $Style->styles . '; ' : '');
+
+        }
     }
 
     public static function oppositeSide($Side) {

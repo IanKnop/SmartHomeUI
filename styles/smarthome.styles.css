@@ -378,9 +378,10 @@ body {
 
 .module-header {
 
+    position: absolute;
     display: inline;
     
-    margin-left: 15px;
+    left: 15px;
     padding-left: 15px;
     padding-right: 15px;
 

@@ -49,3 +49,15 @@ function urlDecode(inputString) {
     return decodeURIComponent(inputString.replace(/\+/g, ' '));
 }
 
+function setDimensions(target, top, left, height, width) {
+
+    /* setDimensions()____________________________________________________
+    Set location and size of element                                     */
+
+    target.style.height = height;
+    target.style.width = width;
+    target.style.top = top;
+    target.style.left = left;
+
+}
+

@@ -6,7 +6,7 @@
         Event occurs when window size has changed                                  */        
 
         var contentRatio = '{{[ratio]}}';
-        keepAspectResize(getCanvasContainer('{{[id]}}'), getCanvasContent('{{[id]}}'), contentRatio);
+        ControlProviders.canvas.keepAspectResize(ControlProviders.canvas.getCanvasContainer('{{[id]}}'), ControlProviders.canvas.getCanvasContent('{{[id]}}'), contentRatio);
     }
 
     window.addEventListener('load', canvasResize);

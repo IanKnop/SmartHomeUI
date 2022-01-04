@@ -56,17 +56,37 @@ If you want to control a ioBroker provided smart home device with this UI you ca
             "binding": "hue.0.light1",
             "bindingProvider": "iobroker",
             "img": "img/icons/switch.svg",
-            "action": "sendDefaultRequest('trigger', { deviceId: 'hue.0.light1' }, this, 'KEY1');"
+            "action": {
+                "method": "trigger",
+                "payload": {
+                    "deviceId": "hue.0.light1"
+                },
+                "sound": "KEY1"
+            }
         },
         {
             "type": "select",
             "img": "img/icons/scene_eat.svg",
-            "action": "sendDefaultRequest('scene', { sceneId: 'hue.0.scene_1' }, this, 'SCENE');"
+            "action": {
+                "method": "scene",
+                "payload": {
+                    "sceneId": "hue.0.scene_1",
+                    "deviceId": "hue.0.light1"
+                },
+                "sound": "SCENE"
+            }
         },
         {
             "type": "select",
             "img": "img/icons/scene_bright.svg",
-            "action": "sendDefaultRequest('scene', { sceneId: 'hue.0.scene_2' }, this, 'SCENE');"
+            "action": {
+                "method": "scene",
+                "payload": {
+                    "sceneId": "hue.0.scene_2",
+                    "deviceId": "hue.0.light1"
+                },
+                "sound": "SCENE"
+            }
         }
     ]
 }
