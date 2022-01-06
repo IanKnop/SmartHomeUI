@@ -7,10 +7,8 @@
     www.knop.family
     ========================================================= */
 
-class ButtonGroup implements ICanvasControl
+class ButtonGroup extends Control implements ICanvasControl
 {
-
-    // DEFINITION SCOPES: element (for complete canvasElement), group, control, image, text
 
     const DEFAULT_CONTROL_TYPE = 'switch';
 
@@ -83,7 +81,7 @@ class ButtonGroup implements ICanvasControl
                                        $this->getLocationBasedClasses($ControlCount, $ControlIndex) . 
                                        (isset($Control->class) ? Util::getValueByScope($Control->class, 'control') . ' ' : ''),
 
-                "control-style"     => isset($Control->style) ? Util::getValueByScope($Control->style, 'control') . ' ' : '',
+                "control-style"     => isset($Control->style) ? Util::getStdStylesByScope($Control->style, 'control') . ' ' : '',
 
                 /* Set script events and update behaviour */
                 "events"            => $this->getEventFromAction($Control),
@@ -96,30 +94,8 @@ class ButtonGroup implements ICanvasControl
         return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.controls/' . $this->getControlType($Control->type), $Properties);
     }
 
-    private function getEventFromAction($Control) {
-
-        /* getEventFromAction()______________________________________________________
-        Returns JavaScript function for given property based action definition      */
-
-        if (isset($Control->action) && !is_string($Control->action)) {
-            
-            $Action = $Control->action;
-            return Base::getClickEvent('sendRequest(\'' . @Util::val($Action->adapter) . '\', \'' . @Util::val($Action->method, 'trigger') . '\', ' . (isset($Action->payload) ? htmlentities(Base::replaceProperties(json_encode($Action->payload), $Control)) : '{ }') . ', this, \'' . @Util::val($Action->sound) . '\');');
-
-        } else if (isset($Control->action)) {
-
-            return Base::getClickEvent(Base::replaceProperties($Control->action, $Control));
-        
-        } else {
-
-            return '';
-        }
-
-    }
-
     private function getControlType($TypeId)
     {
-
         /* getControlType()__________________________________________________________
         Returns inner control type based on type name (i.e. text -> value)          */
 
@@ -189,7 +165,6 @@ class ButtonGroup implements ICanvasControl
     /* =========================================================
         BUTTON GROUP CONTROLS 
        ========================================================= */
-
     private function getTypeBasedProperties($Control, &$Properties, &$ControlIndex, $ControlCount)
     {
 
@@ -228,7 +203,7 @@ class ButtonGroup implements ICanvasControl
         /* getButton()_______________________________________________________________
         Returns properties for button in button group                               */
         
-        $ImageSource = (isset($Control->style->img) ? $Control->style->img : $Control->img);
+        $ImageSource = (isset($Control->style->img) ? $Control->style->img : (isset($Control->img) ? $Control->img : ''));
         $Properties = array_merge($Properties,
             array(
                 "img"               => @Util::val($ImageSource, '', 'background-image: url(', ');'),
@@ -238,7 +213,7 @@ class ButtonGroup implements ICanvasControl
                 "content-class"     => (isset($ImageSource) ? 'button-image ' : '') . (isset($Control->class) ? Util::getValueByScope($Control->class, 'content', false) : ''),
                 "text-class"        => isset($Control->class) ? Util::getValueByScope($Control->class, 'text', false) : '',
                 "image-class"       => isset($Control->class) ? Util::getValueByScope($Control->class, 'image', false) : '',
-                "content-style"     => isset($Control->style) ? Util::getValueByScope($Control->style, 'content', false) : '',
+                "content-style"     => isset($Control->style) ? Util::getStdStyles(Util::getValueByScope($Control->style, 'content', false)) : '',
                 
                 /* Set script events and update behaviour */
                 "events"            => ($Properties['events'] == '' ? Base::getClickEvent('triggerSwitch(\'' . $Properties['binding'] . '\', this);') : $Properties['events']),
@@ -259,8 +234,6 @@ class ButtonGroup implements ICanvasControl
         /* getLabel()________________________________________________________________
         Returns properties for label in button group (replacing button)             */
 
-        if (isset($Control->class)) $Properties['class'] .= ' ' . $Control->class;
-
         $Properties = array_merge($Properties,
             array(
                 /* Set value type and systematic */
@@ -275,7 +248,7 @@ class ButtonGroup implements ICanvasControl
 
                 /* Set classes and styles for label */
                 "content-class"     => isset($Control->class) ? Util::getValueByScope($Control->class, 'content', false) : '',
-                "content-style"     => isset($Control->style) ? Util::getValueByScope($Control->style, 'content', false) : '',
+                "content-style"     => isset($Control->style) ? Util::getStdStyles(Util::getValueByScope($Control->style, 'content', false)) : '',
                 "update"            => (!isset($Control->binding) ? 'true' : 'true')
             )
         );
@@ -287,7 +260,6 @@ class ButtonGroup implements ICanvasControl
         /* getNavigate()_____________________________________________________________
         Returns properties for button with ability to open window with view content */
 
-        if (isset($Control->class)) $Properties['control-class'] .= ' ' . $Control->class;
         if (isset($Control->view) && (!isset($Control->view->target) || strtolower($Control->view->target) == 'self')) {
 
             // INSERT LINK TO OTHER VIEW

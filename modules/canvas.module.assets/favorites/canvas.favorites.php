@@ -7,7 +7,7 @@
     www.knop.family
     ========================================================= */
 
-class Favorites implements ICanvasControl {
+class Favorites extends Control implements ICanvasControl {
 
     public $ParentModule = null;
     
@@ -35,7 +35,7 @@ class Favorites implements ICanvasControl {
                     "rows"      => 'repeat(' . floatval($this->GridRows) . ', 1fr)',
                     "cols"      => 'repeat(' . floatval($this->GridCols) . ', 1fr)',
                     "class"     => @Util::val($Source->class),
-                    "style"     => @Util::val($Source->style),
+                    "style"     => Util::getStdStyles($Source),
                     "buttons"   => $this->getFavButtons(Util::getVariantValue($Source->buttons, $Variant))));
         }
     }
@@ -70,7 +70,7 @@ class Favorites implements ICanvasControl {
             "col"       => $Col,
             "action"    => @Util::val($ButtonSource->action),
             "class"     => 'fav-button border ' . $this->getButtonClasses($Row, $Col, $ButtonSource),
-            "style"     => @Util::val($ButtonSource->style),
+            "style"     => Util::getStdStyles($ButtonSource),
             "img"       => (isset($ButtonSource->img) ? Base::getBGImage($ButtonSource->img) : ''),
             "title"     => ($ButtonSource != null ? $ButtonSource->title : '')));
     }
@@ -91,9 +91,9 @@ class Favorites implements ICanvasControl {
         Returns button class based on grid position                                */   
 
         return Base::getEdgeValue($Row, $this->GridRows, 
-                Base::getEdgeValue($Col, $this->GridCols, 'rounded-top-left', '', 'rounded-top-right'),
-                Base::getEdgeValue($Col, $this->GridCols, 'fav-button-middle', 'fav-button-middle', 'fav-button-middle'),
-                Base::getEdgeValue($Col, $this->GridCols, 'fav-button-bottom rounded-bottom-left', 'fav-button-bottom', 'fav-button-bottom rounded-bottom-right'));
+               Base::getEdgeValue($Col, $this->GridCols, 'rounded-top-left', '', 'rounded-top-right'),
+               Base::getEdgeValue($Col, $this->GridCols, 'fav-button-middle', 'fav-button-middle', 'fav-button-middle'),
+               Base::getEdgeValue($Col, $this->GridCols, 'fav-button-bottom rounded-bottom-left', 'fav-button-bottom', 'fav-button-bottom rounded-bottom-right'));
     }
 
 }

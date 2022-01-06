@@ -28,6 +28,7 @@ class Module implements IModule {
     
     public $Start = null;
     public $End = null;
+    public $GridControl = false;
     
     public $Source = null;
     public $ViewSource = null;
@@ -67,13 +68,9 @@ class Module implements IModule {
 
             /* VARIANT PROPERTIES */
             $this->VariantProperties = $this->getVariantValue();
-            /*if (isset($this->Properties->hasVariants) && $this->Properties->hasVariants = true && isset($this->Properties->{$Variant})) {
-                $this->VariantProperties = $this->Properties->{$Variant};
-            }*/
         }
 
         /* LOAD SOURCE EXTENSIONS */
-        //if ($this->Name != '') Base::loadLibraries('modules/' . $this->Name . '.assets');
         if ($this->Name != '') $this->includeFiles('.php', 'php');
     }
 
@@ -89,12 +86,20 @@ class Module implements IModule {
         $this->ViewSource   = $ViewSource;
         $this->Header       = @Util::val($ModuleSource->header);
         $this->HideHeader   = @Util::val($ModuleSource->hideHeader);
-        $this->Img          = @Util::val($ModuleSource->img);
-        $this->Class        = @Util::val($ModuleSource->class);
         $this->Conditions   = @Util::val($ModuleSource->conditions, null);
-        $this->Style        = @Util::val($ModuleSource->style) . @Util::val($ModuleSource->styles);
-        $this->Start        = @Util::val($ModuleSource->start);
-        $this->End          = @Util::val($ModuleSource->end);
+        
+        /* Serialize class and style information */
+        $this->Class        = Util::getValueByScope($ModuleSource->class, 'module', true);
+        $this->Style        = (isset($ModuleSource->style) ? Util::getStdStylesByScope($ModuleSource->style, 'module', true) : ''); 
+        
+        /* Background image can be definied in root or under "style" node */
+        $this->Img          = (isset($ModuleSource->style->img) ? @Util::val($ModuleSource->style->img) : @Util::val($ModuleSource->img));
+        
+        /* Start and end position of modile can be definied in root or under "style" node */
+        $this->Start        = (isset($ModuleSource->style->start) ? @Util::val($ModuleSource->style->start) : @Util::val($ModuleSource->start));
+        $this->End          = (isset($ModuleSource->style->end) ? @Util::val($ModuleSource->style->end) : @Util::val($ModuleSource->end));
+
+        $this->GridControl = ($this->Start != null && $this->End != null);
     }
 
     public function parseModule($Content = '', $Target = 'view.module') {
@@ -106,8 +111,8 @@ class Module implements IModule {
             array(
                 "id"            => $this->Id, 
                 "class"         => $this->Class, 
-                "style"         => $this->Style . 
-                                   ($this->Start != null && $this->End != null ? Util::getGridValues($this->Start, $this->End) : '') . 
+                "style"         => $this->Style . ' ' . 
+                                   ($this->GridControl ? Util::getGridValues($this->Start, $this->End) : '') . 
                                    ($Target == 'window' ? ' background: var(--module-gradient-opaque-r);' : '') . 
                                    ($this->Img != null ? ImageUtil::getBackgroundImage($this->Img, $this->Variant, 'var(--module-gradient)') : ''), 
                 "conditions"    => ($this->Conditions != null ? 'cc-conditions="' . urlencode(json_encode($this->Conditions)) . '"' : ''),
@@ -285,4 +290,5 @@ class Modules {
         return $SourcesLoaded;
     }
 }
+
 ?>

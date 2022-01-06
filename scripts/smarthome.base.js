@@ -6,6 +6,12 @@
     www.knop.family
     ========================================================= */
 
+const SET_DELAY_SLEEP   = 30;   //seconds until sleep mode begins
+const SET_DELAY_DIM     = 30;   //seconds more until dimming is activated if between SET_DIM_START and SET_DIM_END 
+    
+const SET_DIM_START     = 23;   //:00 dimming is activated
+const SET_DIM_END       = 07;   //:00 dimming is de-activated
+
 const DEFAULT_CONTROL = 'canvas'
 const URL_ENCODED = 'application/x-www-form-urlencoded';
 
@@ -166,10 +172,10 @@ var SmartHomeUI = new function() {
 
         // PROPERTIES
         this.activated = true;
-        this.delaySleep = 30;                   // time in seconds until screen saver starts (should be >10)
-        this.delayDimming = 30;                 // time in seconds until screen saver is dimmed (null if no dimming)
-        this.dimAfterHour = 23;                 // time of the day from which dimming is activated
-        this.dimBeforeHour = 6;                 // time of the day until dimming stays aktivated
+        this.delaySleep = SET_DELAY_SLEEP;
+        this.delayDimming = SET_DELAY_DIM;
+        this.dimAfterHour = SET_DIM_START;
+        this.dimBeforeHour = SET_DIM_END; 
         this.wallpaper = 'wallpaper-A.jpg';     // file must be located in "/img/wallpaper"
         
         // STATES PROPERTIES

@@ -7,7 +7,7 @@
     www.knop.family
     ========================================================= */
 
-class LabelValue implements ICanvasControl {
+class LabelValue extends Control implements ICanvasControl {
 
     public $ParentModule = null;
     

@@ -7,16 +7,6 @@
     www.knop.family
     ========================================================= */
 
-interface ICanvasControl {
-
-    /* =========================================================
-        CANVAS CONTROL INTERFACE
-       ========================================================= */
-
-    public function parseControl($Source, $Variant = null);
-    
-}
-
 class Canvas extends Module implements IModule {
 
     /* =========================================================

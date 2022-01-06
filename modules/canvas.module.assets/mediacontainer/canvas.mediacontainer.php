@@ -7,7 +7,7 @@
     www.knop.family
     ========================================================= */
 
-class MediaContainer implements ICanvasControl {
+class MediaContainer extends Control implements ICanvasControl {
 
     public $ParentModule = null;
     
