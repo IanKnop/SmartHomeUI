@@ -537,6 +537,7 @@ body {
     background: transparent!important;
     box-shadow: none!important;
     border: none!important;
+    outline: none!important;
 
 } 
 

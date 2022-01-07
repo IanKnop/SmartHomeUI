@@ -84,9 +84,8 @@ module-canvas {
     display: inline-block;
     z-index: 185;
 
-    border: var(--border-width) solid var(--border-color);
+    outline: var(--border-width) solid var(--border-color); 
     /*background: var(--scene-button-gradient);*/
-
     cursor: pointer;
     z-index: 150;
 }

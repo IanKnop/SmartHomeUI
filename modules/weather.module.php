@@ -23,8 +23,6 @@ class Weather extends Module implements IModule {
         /* parseModule()____________________________________________________________
         Returns weather module content as HTML                                     */     
 
-        Base::debug('test', $this->Source);
-
         $Content .= Views::parseTemplate('weather', 'templates/widget', array(
                         "id"            => @Util::val($this->Id, rand(1000000, 9999999)),
                         "provider"      => @Util::val($this->VariantProperties->bindingProvider, '', 'cc-provider="', '" '),

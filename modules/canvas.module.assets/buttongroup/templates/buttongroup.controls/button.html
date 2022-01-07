@@ -1,4 +1,5 @@
-<div id="{{[id]}}" class="canvas-control {{[control-class]}}" style="{{[control-style]}}" cc-type="button" cc-control-provider="canvas" cc-binding="{{[binding]}}" {{[binding-provider]}} cc-update="{{[update]}}" {{[cc-true]}} {{[cc-color]}} {{[events]}}>
-    <span id="{{[id]}}-button-image" class="{{[content-class]}} {{[image-class]}}" style="{{[img]}} {{[content-style]}}">{{[text]}}</span>
-    <span id="{{[id]}}-button-text" class="{{[text-class]}}" style="{{[text-style]}}">{{[text]}}</span>
+<div id="{{[id]}}" class="canvas-control {{[control-class]}}" style="{{[control-style]}}" cc-type="switch" cc-control-provider="canvas" cc-binding="{{[binding]}}" {{[binding-provider]}} cc-update="{{[update]}}" {{[value]}} {{[cc-true]}} {{[cc-color]}} {{[events]}}>
+    <span id="{{[id]}}-content" class="value-label {{[content-class]}}" style="{{[img]}} {{[content-style]}}">{{[text]}}</span>
+    <div id="{{[id]}}-indicator" class="{{[indicator-class]}}" style="visibility: {{[indicator-visible]}}"></div>
 </div>
+{{[IF:hasWindow:{[windows]}]}}

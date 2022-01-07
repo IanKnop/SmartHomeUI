@@ -71,6 +71,7 @@ class ButtonGroup extends Control implements ICanvasControl
         $Properties =
             array(
                 "id"                => @Util::val($Control->id, $this->getControlType($Control->type) . '-' . rand(1000000, 9999999)),
+                "hasWindow"         => $Control->type == 'navigate',
 
                 /* Set binding (Id) and binding provider (if set) */
                 "binding"           => @Util::val($Control->binding),
@@ -81,7 +82,7 @@ class ButtonGroup extends Control implements ICanvasControl
                                        $this->getLocationBasedClasses($ControlCount, $ControlIndex) . 
                                        (isset($Control->class) ? Util::getValueByScope($Control->class, 'control') . ' ' : ''),
 
-                "control-style"     => isset($Control->style) ? Util::getStdStylesByScope($Control->style, 'control') . ' ' : '',
+                "control-style"     => isset($Control->style) ? Util::getStdStylesByScope($Control->style, 'control', true) . ' ' : '',
 
                 /* Set script events and update behaviour */
                 "events"            => $this->getEventFromAction($Control),
@@ -91,15 +92,16 @@ class ButtonGroup extends Control implements ICanvasControl
         // RETURN CONTROL BASED ON PROPERTIES
         $this->getTypeBasedProperties($Control, $Properties, $ControlIndex, $ControlCount);
 
-        return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.controls/' . $this->getControlType($Control->type), $Properties);
+        return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup.controls/' . $this->getControlType($Control->type, true), $Properties);
     }
 
-    private function getControlType($TypeId)
+    private function getControlType($TypeId, $TemplateId = false)
     {
         /* getControlType()__________________________________________________________
         Returns inner control type based on type name (i.e. text -> value)          */
 
         if ($TypeId == 'text' || $TypeId == 'numeric' || $TypeId == 'date' || $TypeId == 'time' || $TypeId == 'html') return 'value';
+        else if ($TemplateId && ($TypeId == 'button' || $TypeId == 'switch' || $TypeId == 'select' || $TypeId == 'navigate')) return 'button';
         else if ($TypeId != '') return strtolower($TypeId);
         else return self::DEFAULT_CONTROL_TYPE;
     }
@@ -213,7 +215,8 @@ class ButtonGroup extends Control implements ICanvasControl
                 "content-class"     => (isset($ImageSource) ? 'button-image ' : '') . (isset($Control->class) ? Util::getValueByScope($Control->class, 'content', false) : ''),
                 "text-class"        => isset($Control->class) ? Util::getValueByScope($Control->class, 'text', false) : '',
                 "image-class"       => isset($Control->class) ? Util::getValueByScope($Control->class, 'image', false) : '',
-                "content-style"     => isset($Control->style) ? Util::getStdStyles(Util::getValueByScope($Control->style, 'content', false)) : '',
+
+                "content-style"     => isset($Control->style) ? Util::getStdStyles(Util::getValueByScope($Control->style, 'content', true)) : '',
                 
                 /* Set script events and update behaviour */
                 "events"            => ($Properties['events'] == '' ? Base::getClickEvent('triggerSwitch(\'' . $Properties['binding'] . '\', this);') : $Properties['events']),

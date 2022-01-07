@@ -41,7 +41,7 @@ element {
 
 .element-group {
 
-    display: block;
+    display: flex;
     z-index: 175;
 
     border-radius: var(--corner-radius-button);
@@ -224,13 +224,32 @@ element {
 .button-text {
 
     font-size: 4vmin!important;
-    display: inline-flex!important;
+    display: flex!important;
     align-items: center!important;
+    justify-content: space-evenly;
     font-weight: 200!important;
     vertical-align: top!important;
 
-    width: calc(4 * var(--button-size))!important;
+    /*width: calc(4 * var(--button-size))!important;*/
 }
+
+.button-image-text {
+
+    font-size: 4vmin!important;
+    display: flex!important;
+    align-items: center!important;
+    justify-content: space-evenly;
+    font-weight: 600!important;
+    vertical-align: top!important;
+
+    background-position: left;
+    background-size: 5vmin!important;
+    background-position-x: 2.5vmin;
+    text-indent: 7.5vmin;
+
+    /*width: calc(4 * var(--button-size))!important;*/
+}
+
 
 /* =========================================================
     SCREEN SIZE DEPENDEND STYLING 
@@ -346,6 +365,10 @@ element {
 
 }
 
-.value-label { }
+.value-label { 
+
+    width: inherit;
+
+}
 
 
