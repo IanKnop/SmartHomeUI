@@ -6,8 +6,8 @@
     www.knop.family
     ========================================================= */
 
-const SET_DELAY_SLEEP   = 30;   //seconds until sleep mode begins
-const SET_DELAY_DIM     = 30;   //seconds more until dimming is activated if between SET_DIM_START and SET_DIM_END 
+const SET_DELAY_SLEEP   = 3;   //seconds until sleep mode begins
+const SET_DELAY_DIM     = 3;   //seconds more until dimming is activated if between SET_DIM_START and SET_DIM_END 
     
 const SET_DIM_START     = 23;   //:00 dimming is activated
 const SET_DIM_END       = 07;   //:00 dimming is de-activated

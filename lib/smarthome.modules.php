@@ -115,7 +115,7 @@ class Module implements IModule {
                                    ($this->GridControl ? Util::getGridValues($this->Start, $this->End) : '') . 
                                    ($Target == 'window' ? ' background: var(--module-gradient-opaque-r);' : '') . 
                                    ($this->Img != null ? ImageUtil::getBackgroundImage($this->Img, $this->Variant, 'var(--module-gradient)') : ''), 
-                "conditions"    => ($this->Conditions != null ? 'cc-conditions="' . urlencode(json_encode($this->Conditions)) . '"' : ''),
+                "conditions"    => ($this->Conditions != null ? 'cc-conditions="' . htmlentities(json_encode($this->Conditions)) . '"' : ''),
                 "has-header"    => ($this->Header != null && $this->Header != '' && !$this->HideHeader),
                 "header"        => ($this->Header != null ? Util::getVariantValue($this->Header, $this->Variant, $this->ViewSource) : ''),
                 "content"       => $Content));

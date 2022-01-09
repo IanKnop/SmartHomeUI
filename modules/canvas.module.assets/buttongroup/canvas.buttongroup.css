@@ -337,6 +337,8 @@ element {
 .value-control {
     
     color: var(--value-color)!important;
+    background: var(--mainB);
+
     font-size: 4vmin!important;
     display: inline-flex!important;
     align-items: center!important;
@@ -349,18 +351,21 @@ element {
 
 .value-control-medium {
     
+    background: var(--mainB);
     width: calc(1.33 * var(--button-size))!important;
 
 }
 
 .value-control-flex {
     
+    background: var(--mainB);
     width: auto!important;
 
 }
 
 .value-control-small {
     
+    background: var(--mainB);
     width: var(--button-size)!important;
 
 }

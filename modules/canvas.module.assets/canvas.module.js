@@ -27,17 +27,25 @@ function Canvas() {
             switch (currentControl.getAttribute('cc-type').toLowerCase()) {
 
                 case 'switch':
+                case 'select': 
+
+                    var inidicatorControl = currentControl.querySelectorAll('div.indicator')[0];
+
                     if (state) {
 
                         currentControl.classList.add('switch-control-active' + (currentControl.hasAttribute('cc-color') ? '-' + currentControl.getAttribute('cc-color').toLowerCase() : ''));
-                        currentControl.querySelectorAll('div.indicator')[0].style.visibility = 'visible';
                         currentControl.setAttribute('cc-value', 'true');
+                        
+                        /* Indicator visibility set to '' instead of 'visible' to avoid unwanted visibility in hidden windows */
+                        inidicatorControl.style.visibility = '';
 
                     } else {
 
                         currentControl.classList.remove('switch-control-active' + (currentControl.hasAttribute('cc-color') ? '-' + currentControl.getAttribute('cc-color').toLowerCase() : ''));
-                        currentControl.querySelectorAll('div.indicator')[0].style.visibility = 'hidden';
                         currentControl.setAttribute('cc-value', 'false');
+                        
+                        inidicatorControl.style.visibility = 'hidden';
+                        
                     }
             }
         }

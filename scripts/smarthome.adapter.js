@@ -77,8 +77,10 @@ function refreshStates(force = false) {
                 if (control.provider == undefined || control.provider == null || control.provider == 'null' || control.provider == '') control.provider = DEFAULT_ADAPTER;
                 
                 // UPDATE DATA AND REFRESH CONTROLS ON USER INTERFACE
-                if (control.provider.toLowerCase() == 'internal' || control.provider.toLowerCase() == 'cc-internal') control.control.innerHTML = SmartHomeUI.parseExpressions(control.binding);
-                else Adapters[control.provider].refreshState(control, Date.now());
+                /*if (control.provider.toLowerCase() == 'internal' || control.provider.toLowerCase() == 'cc-internal') control.control.innerHTML = SmartHomeUI.parseExpressions(control.binding);
+                else */ 
+                
+                Adapters[control.provider].refreshState(control, Date.now());
 
             });
 
@@ -194,11 +196,12 @@ function refreshControl(control, adapter) {
                     else control.innerHTML = prefix + bindValue + suffix;
                     break;
         
+                case 'button':
                 case 'switch':
                 case 'select':
                 case 'scene':
         
-                    var controlProvider = (control.hasAttribute('cc-true') ? control.hasAttribute('cc-true') : DEFAULT_CONTROL);
+                    var controlProvider = (control.hasAttribute('cc-control-provider') ? control.getAttribute('cc-control-provider') : DEFAULT_CONTROL);
                     ControlProviders[controlProvider].updateActiveState(control, adapter.checkActiveState(bindValue, typeAttr));
                     break;
             }

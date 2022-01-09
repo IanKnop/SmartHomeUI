@@ -74,7 +74,7 @@ class ButtonGroup extends Control implements ICanvasControl
                 "hasWindow"         => $Control->type == 'navigate',
 
                 /* Set binding (Id) and binding provider (if set) */
-                "binding"           => @Util::val($Control->binding),
+                "binding"           => @Util::val($Control->binding, (isset($Control->bindingProvider) && $Control->bindingProvider == 'internal' ? '#' : '')),
                 "binding-provider"  => @Util::val($Control->bindingProvider, '', 'cc-provider="', '" '),
 
                 /* Set standard control class ([type]-class) and any additionally defined classes and styles */
@@ -220,7 +220,7 @@ class ButtonGroup extends Control implements ICanvasControl
                 
                 /* Set script events and update behaviour */
                 "events"            => ($Properties['events'] == '' ? Base::getClickEvent('triggerSwitch(\'' . $Properties['binding'] . '\', this);') : $Properties['events']),
-                "update"            => (strtolower($Control->type) == 'switch' ? 'true' : 'false'),
+                "update"            => (isset($Control->update) ? $Control->update : 'true'),
                 
                 /* Set axtivation behaviour and indicator style */
                 "cc-true"           => @Util::val((is_array($Control->trueIf) ? htmlentities(json_encode($Control->trueIf)) : $Control->trueIf), '', 'cc-true="', '"'),
