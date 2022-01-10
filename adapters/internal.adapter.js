@@ -24,78 +24,213 @@ function internalAdapter() {
 /* =========================================================
    STANDARD ADAPTER METHODS
    ========================================================= */
-internalAdapter.prototype.sendRequest = function (requestMode, payload, refreshControl = null, controlProvider = 'canvas', nextFunction = null) {
+internalAdapter.prototype.sendRequest = function (requestMode, payload, senderControl = null, controlProvider = 'canvas', nextFunction = null) {
 
     /* sendRequest()________________________________________________________
     Sends request to ioBroker API                                          */
 
+    // RESOLVE {{[TARGET_ID]}} IF AVAILABLE
+    var targetId = (payload.target != undefined && payload.target.id != undefined ? payload.target.id : '');
+    
+    var isControl = (payload.target != undefined && (payload.target.type == undefined || payload.target.type.toLowerCase() == 'control'));
+    var targetControl = (isControl ? document.getElementById(targetId) : senderControl);
+    
     switch (requestMode.toLowerCase()) {
 
-        case 'select':
-            
-            if (!refreshControl.hasAttribute('cc-value') || refreshControl.getAttribute('cc-value') == 'false') refreshControl.setAttribute('cc-value', true);
-            else refreshControl.setAttribute('cc-value', false);
-            
-            this.refreshState(refreshControl);
+        // VALUE: Modify value of control or variable
+        case 'value':
 
-            if (payload.target != undefined && payload.target.id != undefined && payload.value != undefined) {
+            if (payload.target != undefined && targetId != '' && payload.value != undefined) {
+
+                //var targetControl = document.getElementById(targetId);
+
+                var mode = (payload.mode != undefined ? payload.mode : 'add');
+                var format = (payload.valueFormat != undefined ? payload.valueFormat : 'numeric');
+            
+                switch (mode) {
+                
+                    case 'add':
+                    case 'plus':
+                    case 'substract': 
+                    case 'minus':
+
+                        switch (format) {
+
+                            case 'time':
+                            
+                                var dateValue = new Date();
+                                var currentValue = targetControl.getAttribute('cc-value');
+                                var short = (currentValue.length == 5);
+
+                                if (currentValue != null) {
+                               
+                                    var calcValue = dateValue.setHours(currentValue.substring(0, 2), currentValue.substring(3, 5), (short ? payload.value : currentValue.substring(6, 8) + payload.value));
+                                    var newValue = (new Date(calcValue)).toTimeString().substring(0, (short ? 5 : 8));
+                                }                         
+                                break;
+
+                            default:
+
+                                var additor = payload.value * (mode == 'substract' || mode == 'minus' ? -1 : 1);
+                                var newValue = parseFloat(targetControl.getAttribute('cc-value')) + parseFloat(additor); 
+                                break;
+                        }
+                        break;
+
+                    case 'multi':
+                    case 'multiply':
+
+                        var newValue = parseFloat(targetControl.getAttribute('cc-value')) * parseFloat(payload.value); 
+                        break;
+
+                    case 'div':
+                    case 'divide':
+        
+                        var newValue = parseFloat(targetControl.getAttribute('cc-value')) / parseFloat(payload.value).toPrecision(5); 
+                        break;
+
+                    default:
+                        var newValue = parseFloat(targetControl.getAttribute('cc-value'));
+
+                }
+
+                if (!(targetControl.hasAttribute('cc-min') && targetControl.getAttribute('cc-min') > newValue ||
+                      targetControl.hasAttribute('cc-max') && targetControl.getAttribute('cc-max') < newValue)) {
+
+                    targetControl.setAttribute('cc-value', newValue);
+                    this.dataset[targetId] = newValue;
+                } 
+            }
+            break;
+        
+        // SWITCH: Used to select or deselect state and save information to given variable
+        case 'switch':
+        
+            var toggleState = ButtonGroups.toggleButton(senderControl, this.dataset);
+            
+            if (payload.target != undefined && targetId != '' && payload.value != undefined) {
 
                 if (payload.target.type == undefined) payload.target.type = 'object';
-
                 switch(payload.target.type) {
 
                     case 'object':
-                        this.dataset[payload.taget.id] = payload.value;
+                        this.dataset[targetId] = payload.value;
                         break;
 
                     case 'array':
 
-                        if (this.dataset[payload.target.id] == undefined) this.dataset[payload.target.id] = [];
-                        if (!this.dataset[payload.target.id].includes(payload.target.value)) this.dataset[payload.target.id].push(payload.value);
+                        // CREATE IF NON EXISTENT
+                        if (this.dataset[targetId] == undefined) this.dataset[targetId] = [];
+
+                        // ADD OR REMOVE FROM ARRAY
+                        if (toggleState && !this.dataset[targetId].includes(payload.value)) this.dataset[targetId].push(payload.value);
+                        else if (!toggleState && this.dataset[targetId].includes(payload.value)) this.dataset[targetId].splice(this.dataset[targetId].indexOf(payload.value), 1);
+
                         break;
                 }
             }
             break;
         
+        // LIST: Used for scrolling through a LIST of values with up/down-buttons and select one 
+        case 'list':
+
+                if (payload.list != undefined) {
+    
+                    //var targetControl = (isControl ? document.getElementById(targetId) : senderControl);
+                    var value = targetControl.getAttribute('cc-value');
+
+                    if (value == null) {
+                        
+                        var newValue = (payload.listProperties != undefined ? payload.listProperties[0] : payload.list[0]);
+
+                        targetControl.setAttribute('cc-value', payload.list[0]);
+                        if (payload.listKeys != undefined) targetControl.setAttribute('cc-value-key', payload.listKeys[0]);
+
+                        this.dataset[targetId] = payload.list[0];
+                        if (payload.listKeys != undefined) this.dataset[targetId + '.key'] = payload.list[0];
+                    
+                    } else {
+                     
+                        var direction = (payload.direction != undefined ? (payload.direction.toLowerCase() == 'up' ? 1 : -1) : 1);
+                        var nextIndex = ((payload.list.indexOf(value) + direction > (payload.list.length - 1) || payload.list.indexOf(value) + direction < 0) ? (direction == 1 ? 0 : (payload.list.length - 1)) : payload.list.indexOf(value) + direction);
+
+                        targetControl.setAttribute('cc-value', payload.list[nextIndex]);
+                        if (payload.listKeys != undefined) targetControl.setAttribute('cc-value-key', payload.listKeys[nextIndex]);
+                        
+                        this.dataset[targetId] = payload.list[nextIndex];
+                        if (payload.listKeys != undefined) this.dataset[targetId + '.key'] = payload.listKeys[nextIndex];
+                    }
+
+                    //refreshControl(targetControl);
+
+                }
+                break;
+
+        // MSG: Simple message output mainly for debugging
         case 'msg':
 
-            if (payload.vardump != undefined) {
-
-                // Dumps given variable to a simple message box (for debugging)
-                alert((payload.message != undefined ? payload.message : 'Var dump for "' + payload.vardump + '"\n') + JSON.stringify(this.dataset[payload.vardump]));
-
-            }
-
+            alert(payload.message);
             break;
-            
     }
+
+    updateDataset(this.dataset);
+    refreshControl(targetControl, this);
 }
+
+internalAdapter.prototype.handleResponse = function (responseMode, response, payload, refreshControl) {
+
+    /* handleResponse()_____________________________________________________
+    Handles adapter based call-responses                                   */
+     
+    switch (responseMode.toLowerCase()) {
+        
+        case 'msg':
+
+            if (payload.message != null) alert(payload.message);
+            break;
+        }
+}
+
 
 internalAdapter.prototype.refreshState = function (control, updateTimestamp) {
 
     /* refreshState()______________________________________________________
-    Provider bound refresh for ioBroker API                               */
+    Provider bound refresh for internal adapter                           */
 
     var currentControl = document.getElementById(control.id);
-    
     var controlProvider = (currentControl.hasAttribute('cc-control-provider') ? currentControl.getAttribute('cc-control-provider') : DEFAULT_CONTROL);
     var typeAttr = (currentControl.hasAttribute('cc-type') ? currentControl.getAttribute('cc-type') : '');
     
-    if (currentControl.hasAttribute('cc-binding') && currentControl.getAttribute('cc-binding').trim() != '' && currentControl.getAttribute('cc-binding') != '#') {
+    if (currentControl.hasAttribute('cc-binding') && currentControl.getAttribute('cc-binding').trim().startsWith('{[') && currentControl.getAttribute('cc-binding').trim(']}').endsWith()) {
         
         // RETURN INTERNAL EXPRESSION (i.e. current time)
-        var parsedExpression = Adapters.internal.parseExpressions(currentControl.getAttribute('cc-binding'));
+        var parsedExpression = this.parseExpressions(getFieldName(currentControl.getAttribute('cc-binding')));
 
         currentControl.innerHTML = parsedExpression;
         currentControl.setAttribute('cc-value', parsedExpression);
 
     } 
+    
+    if (currentControl.hasAttribute('cc-binding') && currentControl.getAttribute('cc-binding').trim() != '#' ) {
         
+        if (this.dataset[control.id] == undefined) this.dataset[control.id] = currentControl.getAttribute('cc-value');
+        if (currentControl.hasAttribute('cc-value-key') && this.dataset[control.id + '.key'] == undefined) this.dataset[control.id + '.key'] = currentControl.getAttribute('cc-value-key');
+        
+        updateDataset(this.dataset);
+    }
+    
     // VALUE BASED ACTIVATION STATE (i.e. indicators for selected buttons) 
     if (['button', 'switch', 'select'].includes(typeAttr) && currentControl.hasAttribute('cc-value')) ControlProviders[controlProvider].updateActiveState(control, toBool(currentControl.getAttribute('cc-value')));
     
-    //refreshControl(currentControl, this);
-    
+}
+
+internalAdapter.prototype.checkActiveState = function (checkValue, type) {
+
+    /* checkActiveState()___________________________________________________
+    Check adapter sensitive active state of device                         */
+
+    return toBool(checkValue);
+
 }
 
 internalAdapter.prototype.parseExpressions = function(subject) {
@@ -115,36 +250,3 @@ internalAdapter.prototype.parseExpressions = function(subject) {
 
     return subject;
 }
-
-/*internalAdapter.prototype.retrieveBindings = function() {
-
-     retrieveBindings()___________________________________________________
-    Retrieve all data for this adapter                                     
-
-    if (this.bindings == null) {
-
-        this.bindings = getProviderBindings(AdapterBindings, this.adapterName);
-        this.datapoints = this.bindings.join(',');
-    }
-
-}*/
-
-internalAdapter.prototype.updateDataset = function(updateTimestamp) {
-
-    /* updateDataset()______________________________________________________
-    Retrieve all data for this adapter                                     */
-
-
-
-    
-}
-
-internalAdapter.prototype.checkActiveState = function (checkValue, type) {
-
-    /* checkActiveState()___________________________________________________
-    Check adapter sensitive active state of device                         */
-
-    return (checkValue == undefined ? false : toBool(checkValue));
-
-}
-

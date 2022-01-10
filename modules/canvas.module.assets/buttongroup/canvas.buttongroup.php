@@ -75,9 +75,10 @@ class ButtonGroup extends Control implements ICanvasControl
 
                 /* Set binding (Id) and binding provider (if set) */
                 "binding"           => @Util::val($Control->binding, (isset($Control->bindingProvider) && $Control->bindingProvider == 'internal' ? '#' : '')),
-                "binding-provider"  => @Util::val($Control->bindingProvider, '', 'cc-provider="', '" '),
+                "binding-provider"  => @Util::val($Control->bindingProvider, 'cc-provider="internal"', 'cc-provider="', '" '),
 
                 /* Set standard control class ([type]-class) and any additionally defined classes and styles */
+                "control-provider"  => @Util::val($Control->controlProvider, 'canvas'),
                 "control-class"     => $this->getControlType($Control->type) . '-control ' . 
                                        $this->getLocationBasedClasses($ControlCount, $ControlIndex) . 
                                        (isset($Control->class) ? Util::getValueByScope($Control->class, 'control') . ' ' : ''),
@@ -211,6 +212,9 @@ class ButtonGroup extends Control implements ICanvasControl
                 "img"               => @Util::val($ImageSource, '', 'background-image: url(', ');'),
                 "text"              => @Util::val($Control->text),
 
+                "value"             => @Util::val($Control->value, '', 'cc-value="', '"'),
+                "value-key"         => @Util::val($Control->valueKey, '', 'cc-value-key="', '"'), 
+
                 /* Set classes and styles for image and/or text content */
                 "content-class"     => (isset($ImageSource) ? 'button-image ' : '') . (isset($Control->class) ? Util::getValueByScope($Control->class, 'content', false) : ''),
                 "text-class"        => isset($Control->class) ? Util::getValueByScope($Control->class, 'text', false) : '',
@@ -242,6 +246,7 @@ class ButtonGroup extends Control implements ICanvasControl
                 /* Set value type and systematic */
                 "type"              => @Util::val($Control->type, 'numeric'),
                 "value"             => @Util::val($Control->value, '', 'cc-value="', '"'),
+                "value-key"         => @Util::val($Control->valueKey, '', 'cc-value-key="', '"'),
                 "min"               => @Util::val($Control->min, '', 'cc-min="', '"'),
                 "max"               => @Util::val($Control->max, '', 'cc-max="', '"'),
                 "suffix"            => @Util::val($Control->suffix, '', 'cc-suffix="', '"'),

@@ -33,6 +33,26 @@ function getVar(varName) {
     return getComputedStyle(document.documentElement).getPropertyValue(varName);
 }
 
+function isField(source) {
+
+    /* isField()_____________________________________________________________
+    Returns if value is Smarthome UI field name {{[...]}}')                 */ 
+
+    return (source.trim().startsWith('{{[') && source.trim().endsWith(']}}')) || (source.trim().startsWith('{[') && source.trim().endsWith(']}'));
+
+}
+
+function getFieldName(source) {
+
+    /* getFieldName()________________________________________________________
+    Returns Smarthome UI field name from string                             */ 
+
+    if (source.trim().startsWith('{{[') && source.trim().endsWith(']}}')) return source.trim().substr(3, source.trim().length - 6);
+    else if (source.trim().startsWith('{[') && source.trim().endsWith(']}')) return source.trim().substr(2, source.trim().length - 4);
+    else return source;
+
+}
+
 function replaceComma(inputString) {
 
     /* replaceComma()________________________________________________________

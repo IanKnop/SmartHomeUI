@@ -75,11 +75,6 @@ function refreshStates(force = false) {
             AdapterControls.forEach(function (control) {
 
                 if (control.provider == undefined || control.provider == null || control.provider == 'null' || control.provider == '') control.provider = DEFAULT_ADAPTER;
-                
-                // UPDATE DATA AND REFRESH CONTROLS ON USER INTERFACE
-                /*if (control.provider.toLowerCase() == 'internal' || control.provider.toLowerCase() == 'cc-internal') control.control.innerHTML = SmartHomeUI.parseExpressions(control.binding);
-                else */ 
-                
                 Adapters[control.provider].refreshState(control, Date.now());
 
             });
@@ -166,8 +161,10 @@ function refreshControl(control, adapter) {
     /* refreshControl()________________________________________________________
     Refreshes control using assigned adapter                                  */
 
-    var bindingId = control.getAttribute('cc-binding').toLowerCase();
-    var bindValue = Dataset[bindingId];
+    var bindingId = control.getAttribute('cc-binding');
+    
+    if (bindingId == null || bindingId == '' || bindingId == '#') var bindValue = control.getAttribute('cc-value');
+    else var bindValue = Dataset[bindingId.toLowerCase()];
 
     if (bindValue != undefined) {
 
@@ -225,8 +222,25 @@ function sendRequest(adapter, requestMode, payload, refreshControl = null, sound
 
     if (adapter == null || adapter == '') adapter = DEFAULT_ADAPTER;
 
+    // PLAY SOUND
     if (sound != '') SmartHomeUI.Audio.playSound(sound.toUpperCase());
+    
+    // CALL ADAPTER BASED REQUEST HANDLING
+    replaceFieldValues(payload);
     Adapters[adapter].sendRequest(requestMode, payload, refreshControl, controlProvider, nextFunction);
+
+}
+
+function handleResponse(adapter, responseMode, response, payload = null, refreshControl = null) {
+
+    /* handleResponse()____________________________________________________
+    Handles adapter based call-responses                                  */
+
+    if (adapter == null || adapter == '') adapter = DEFAULT_ADAPTER;
+    
+    replaceFieldValues(payload, response);
+    //replaceFieldValues(response);
+    Adapters[adapter].handleResponse(responseMode, response, payload, refreshControl);
 
 }
 
@@ -239,6 +253,40 @@ function getBindingValue(bindingId, thisDataset = Dataset) {
         if (item.id != undefined) return item.id.toLowerCase() === bindingId;
         else return { val: null };
     })[0].val;
+}
+
+function replaceFieldValues(sourceObject, responseDataset = null, thisDataset = Dataset) {
+    
+    /* replaceFieldValues()___________________________________________________
+    Replaces values for given field names in (payload)-object                */
+    
+    Object.keys(sourceObject).forEach(key => {
+
+        var value = sourceObject[key];
+
+        if (typeof value != 'string') replaceFieldValues(value, responseDataset, thisDataset);
+        else {
+
+            if (value.includes('{response}')) value = value.replace('{response}', (typeof responseDataset === 'string' ? responseDataset : JSON.stringify(responseDataset)));
+
+            while (value.includes('{response.')) {
+
+                var propertyId = value.substring(value.indexOf('{response.') + 10, value.indexOf('}', value.indexOf('{response.')));
+                value = value.replace('{response.' + propertyId + '}', responseDataset[propertyId]);
+            }
+
+            while (value.includes('{[')) {
+
+                var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
+                
+                if (Dataset[fieldName.toLowerCase()] != undefined && typeof Dataset[fieldName.toLowerCase()] === 'string') value = value.replace('{[' + fieldName + ']}', Dataset[fieldName.toLowerCase()]);
+                else if (Dataset[fieldName.toLowerCase()] != undefined) value = value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName.toLowerCase()]));
+                else value = value.replace('{[' + fieldName + ']}', null);
+            }
+
+            sourceObject[key] = value;
+        }
+    });
 }
 
 function getAdapterDataSet(convertDataSet) {
@@ -255,6 +303,15 @@ function getAdapterDataSet(convertDataSet) {
 /* =========================================================
     TOOLS
    ========================================================= */
+function getRequestProperties(payload) {
+
+    var returnString = '?';
+    Object.keys(payload).forEach(key => returnString += key + '=' + payload[key] + '&');
+    
+    return returnString.substring(0, returnString.length - 1);
+
+}
+
 function getProviderBindings(objectsArray, provider = 'iobroker') {
 
     /* getProviderBindings()_______________________________________________

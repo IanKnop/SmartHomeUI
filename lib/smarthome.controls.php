@@ -31,7 +31,16 @@ class Control implements ICanvasControl {
         if (isset($Control->action) && !is_string($Control->action)) {
             
             $Action = $Control->action;
-            return Base::getClickEvent('sendRequest(\'' . @Util::val($Action->adapter) . '\', \'' . @Util::val($Action->method, 'trigger') . '\', ' . (isset($Action->payload) ? htmlentities(Base::replaceProperties(json_encode($Action->payload), $Control)) : '{ }') . ', this, \'' . @Util::val($Action->sound) . '\');');
+            $ControlProvider = isset($Control->controlProvider) ? $Control->controlProvider : 'canvas';
+
+            $NextFunction = '';
+            if (isset($Control->action->handle)) {
+
+                $Response = $Control->action->handle;
+                $NextFunction = 'function(response) { handleResponse(\'' . @Util::val($Response->adapter, $Action->adapter) . '\', \'' . @Util::val($Response->method, 'msg') . '\', response, ' . (isset($Response->payload) ? Base::replaceProperties(json_encode($Response->payload), $Control) : '{ }') . ', this); }';                
+            }
+
+            return Base::getClickEvent('sendRequest(\'' . @Util::val($Action->adapter) . '\', \'' . @Util::val($Action->method, 'trigger') . '\', ' . (isset($Action->payload) ? htmlentities(Base::replaceProperties(json_encode($Action->payload), $Control)) : '{ }') . ', this, \'' . @Util::val($Action->sound) . '\', \'' . @Util::val($ControlProvider) . '\', ' . htmlentities($NextFunction) . ');');
 
         } else if (isset($Control->action)) {
 

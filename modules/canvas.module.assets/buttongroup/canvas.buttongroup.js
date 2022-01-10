@@ -12,36 +12,6 @@
 
 var ButtonGroups = new function () {
 
-    this.changeValue = function(refreshTarget, value, decimals = 0) {
-
-        /* changeValue()_________________________________________________________
-        Modifies numeric value in buttongroup control by given amount           */
-        
-        var changedValue = parseFloat(refreshTarget.getAttribute('cc-value')) + parseFloat(value); 
-
-        if (refreshTarget.hasAttribute('cc-min') && refreshTarget.getAttribute('cc-min') > changedValue ||
-        refreshTarget.hasAttribute('cc-max') && refreshTarget.getAttribute('cc-max') < changedValue) {
-
-            // OUTSIDE OF MIN/MAX-VALUE
-
-        } else {
-            
-            this.setValueLabel(refreshTarget, changedValue);
-
-        }
-    } 
-    
-    this.changeTimeValue = function(refreshTarget, seconds, short = true) {
-
-        /* changeTimeValue()_____________________________________________________
-        Modifies time-value in buttongroup control by given amount of seconds   */
-        
-        var dateValue = new Date();
-        var changedValue = dateValue.setHours(refreshTarget.innerText.substr(0, 2), refreshTarget.innerText.substr(3, 2), (short ? seconds : refreshTarget.innerText.substr(6, 2) + seconds));
-        
-        this.setValueLabel(refreshTarget, (new Date(changedValue)).toTimeString().substring(0, (short ? 5 : 8)));
-    }  
-
     this.setValueLabel = function(refreshTarget, value) {
 
         /* setValueLabel()_______________________________________________________
@@ -66,6 +36,18 @@ var ButtonGroups = new function () {
         }
 
         if (refreshTarget.hasAttribute('cc-value')) refreshTarget.setAttribute('cc-value', value);
+    }
+    
+    this.toggleButton = function(senderControl, returnDataset = null) {
+
+        /* toggleButton()________________________________________________________
+        Toggles button value true/false                                         */
+
+        var returnValue = (!senderControl.hasAttribute('cc-value') || senderControl.getAttribute('cc-value') == 'false');
+        senderControl.setAttribute('cc-value', returnValue)
+
+        if (returnDataset != null) returnDataset[senderControl.getAttribute('cc-binding')] = returnValue;
+        return returnValue;
     }
 
 }
