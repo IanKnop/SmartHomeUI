@@ -201,6 +201,13 @@ function refreshControl(control, adapter) {
                     var controlProvider = (control.hasAttribute('cc-control-provider') ? control.getAttribute('cc-control-provider') : DEFAULT_CONTROL);
                     ControlProviders[controlProvider].updateActiveState(control, adapter.checkActiveState(bindValue, typeAttr));
                     break;
+
+                case 'list':
+
+                    var controlProvider = (control.hasAttribute('cc-control-provider') ? control.getAttribute('cc-control-provider') : DEFAULT_LIST_CONTROL);
+                    ControlProviders[controlProvider].parseList(control, bindValue);
+                    break;
+                
             }
         }
     }

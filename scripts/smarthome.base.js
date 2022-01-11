@@ -12,7 +12,9 @@ const SET_DELAY_DIM = 30;   //seconds more until dimming is activated if between
 const SET_DIM_START = 23;   //:00 dimming is activated
 const SET_DIM_END = 07;   //:00 dimming is de-activated
 
-const DEFAULT_CONTROL = 'canvas'
+const DEFAULT_CONTROL = 'canvas';
+const DEFAULT_LIST_CONTROL = 'list';
+
 const URL_ENCODED = 'application/x-www-form-urlencoded';
 
 var ControlProviders = {};
