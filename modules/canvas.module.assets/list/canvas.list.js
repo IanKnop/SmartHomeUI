@@ -25,16 +25,33 @@ function List() {
 
         if (Array.isArray(content)) {
 
+            var isFirstRow = true;
             content.forEach(row => {
 
-                if (typeof row === 'string') returnValue += '<tr><td>' + row + '</td></tr>';
+                if (typeof row === 'string') {
+                    
+                    // SIMPLE STRING DATA
+                    returnValue += '<tr><td>' + row + '</td></tr>';
+
+                } 
                 else if (Array.isArray(row)) {
 
-                    returnValue += '<tr>';
-                    row.forEach(col => { returnValue += '<td>' + col + '</td>' });
+                    // LIST WITHOUT HEADERS (= STRING ARRAY)
+                    returnValue += '<tr>'; row.forEach(col => { returnValue += '<td class="list-td">' + col + '</td>' }); returnValue += '</tr>';
+
+                } else if (typeof row === 'object') {
+
+                    // LIST WITH HEADERS (= OBJECT ARRAY)
+                    returnValue += '<tr>'; 
+                    if (isFirstRow) Object.keys(row).forEach(col => { returnValue += '<th class="list-th">' + col + '</th>' });
+                    else Object.keys(row).forEach(col => { returnValue += '<td class="list-td">' + row[col] + '</td>' }); 
                     returnValue += '</tr>';
+
                 }
+
+                isFirstRow = false
             });
+
         }
         
         control.innerHTML = returnValue + '</table>';

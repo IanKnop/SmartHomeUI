@@ -36,6 +36,7 @@
                     "binding"           => @Util::val($Source->binding, (isset($Source->bindingProvider) && $Source->bindingProvider == 'internal' ? '#' : '')),
                     "binding-provider"  => @Util::val($Source->bindingProvider, 'cc-provider="internal"', 'cc-provider="', '" '),
 
+                    "action"            => $this->getEventFromAction($Source),
                     "update"            => @Util::val($Source->update, 'true')
 
 

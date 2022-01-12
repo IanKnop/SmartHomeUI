@@ -1,3 +1,27 @@
 /* =========================================================
     Canvas List CSS 
    ========================================================= */
+
+list {
+
+    position: absolute; 
+    left: 5%; 
+    top: 5%;
+
+    width: 90%;
+    height: 90%;
+
+}
+
+.list-th {
+
+    text-align: left;
+    text-transform: uppercase;
+
+}
+
+.list-td {
+
+    text-align: left;
+
+}

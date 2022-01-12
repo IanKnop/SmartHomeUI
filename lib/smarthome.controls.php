@@ -37,7 +37,12 @@ class Control implements ICanvasControl {
             if (isset($Control->action->handle)) {
 
                 $Response = $Control->action->handle;
-                $NextFunction = 'function(response) { handleResponse(\'' . @Util::val($Response->adapter, $Action->adapter) . '\', \'' . @Util::val($Response->method, 'msg') . '\', response, ' . (isset($Response->payload) ? Base::replaceProperties(json_encode($Response->payload), $Control) : '{ }') . ', this); }';                
+                $Adapter = @Util::val($Response->adapter, $Action->adapter);
+                $Method = @Util::val($Response->method, 'msg');
+                $Payload = (isset($Response->payload) ? Base::replaceProperties(json_encode($Response->payload), $Control) : '{ }');
+
+                // GET CALL AND RESPONSE FUNCTION
+                $NextFunction = 'function(response, adapter, refreshControl) { var payload = {}; payload.request = ' . $Payload . '; payload.response = response; sendRequest(\'' . $Adapter . '\', \'' . $Method . '\', payload, refreshControl); }';                
             }
 
             return Base::getClickEvent('sendRequest(\'' . @Util::val($Action->adapter) . '\', \'' . @Util::val($Action->method, 'trigger') . '\', ' . (isset($Action->payload) ? htmlentities(Base::replaceProperties(json_encode($Action->payload), $Control)) : '{ }') . ', this, \'' . @Util::val($Action->sound) . '\', \'' . @Util::val($ControlProvider) . '\', ' . htmlentities($NextFunction) . ');');

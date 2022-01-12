@@ -30,6 +30,9 @@ internalAdapter.prototype.sendRequest = function (requestMode, payload, senderCo
     Sends request to ioBroker API                                          */
 
     // RESOLVE {{[TARGET_ID]}} IF AVAILABLE
+    var responseData = (payload.response != undefined ? payload.response : null);
+    if (responseData != null) payload = payload.request; 
+
     var targetId = (payload.target != undefined && payload.target.id != undefined ? payload.target.id : '');
     
     var isControl = (payload.target != undefined && (payload.target.type == undefined || payload.target.type.toLowerCase() == 'control'));
@@ -48,6 +51,11 @@ internalAdapter.prototype.sendRequest = function (requestMode, payload, senderCo
                 var format = (payload.valueFormat != undefined ? payload.valueFormat : 'numeric');
             
                 switch (mode) {
+
+                    case 'set':
+
+                        alert (JSON.stringify(responseData));
+                        break;
                 
                     case 'add':
                     case 'plus':
@@ -215,7 +223,7 @@ internalAdapter.prototype.refreshState = function (control, updateTimestamp) {
         
         if (this.dataset[control.id] == undefined) this.dataset[control.id] = currentControl.getAttribute('cc-value');
         if (currentControl.hasAttribute('cc-value-key') && this.dataset[control.id + '.key'] == undefined) this.dataset[control.id + '.key'] = currentControl.getAttribute('cc-value-key');
-        
+
         updateDataset(this.dataset);
     }
     

@@ -150,7 +150,7 @@ class Base {
         return 'background-image: url(' . $Url . '); background-repeat: no-repeat; background-position: center;';
     }
 
-    public static function getClickEvent($Event, $SourceObject = null, $WithTouch = false) {
+    public static function getClickEvent($Event, $WithTouch = false) {
         
         /* getClickEvent()__________________________________________________________
         Returns HTML click events                                                  */ 
