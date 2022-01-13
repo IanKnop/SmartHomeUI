@@ -30,13 +30,18 @@
                     "id"            => @Util::val($Source->id, rand(1000000, 9999999)),
 
                     /* Set canvas element classes and styles */
-                    "element-style"     => Util::getStdStyles($Source),
+                    "element-style"     => Util::getStdStylesByScope($Source->style, 'element', true),
                     "element-class"     => isset($Source->class) ? Util::getValueByScope($Source->class, 'element') : '',
+
+                    "style-table"       => Util::getStdStylesByScope($Source->style, 'table', false),
+                    "style-row"         => Util::getStdStylesByScope($Source->style, 'row', false),
+                    "style-cell"        => Util::getStdStylesByScope($Source->style, 'cell', false),
+                    "style-header"      => Util::getStdStylesByScope($Source->style, 'header', false),
 
                     "binding"           => @Util::val($Source->binding, (isset($Source->bindingProvider) && $Source->bindingProvider == 'internal' ? '#' : '')),
                     "binding-provider"  => @Util::val($Source->bindingProvider, 'cc-provider="internal"', 'cc-provider="', '" '),
 
-                    "action"            => $this->getEventFromAction($Source),
+                    "action"            => @Util::val(htmlentities(json_encode($Source->action))), // $this->getEventFromAction($Source, false),
                     "update"            => @Util::val($Source->update, 'true')
 
 

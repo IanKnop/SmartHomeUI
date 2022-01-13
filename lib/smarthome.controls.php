@@ -23,7 +23,7 @@ class Control implements ICanvasControl {
     {
     }
 
-    public function getEventFromAction($Control) {
+    public function getEventFromAction($Control, $CreateClickEvent = true) {
 
         /* getEventFromAction()______________________________________________________
         Returns JavaScript function for given property based action definition      */
@@ -45,11 +45,15 @@ class Control implements ICanvasControl {
                 $NextFunction = 'function(response, adapter, refreshControl) { var payload = {}; payload.request = ' . $Payload . '; payload.response = response; sendRequest(\'' . $Adapter . '\', \'' . $Method . '\', payload, refreshControl); }';                
             }
 
-            return Base::getClickEvent('sendRequest(\'' . @Util::val($Action->adapter) . '\', \'' . @Util::val($Action->method, 'trigger') . '\', ' . (isset($Action->payload) ? htmlentities(Base::replaceProperties(json_encode($Action->payload), $Control)) : '{ }') . ', this, \'' . @Util::val($Action->sound) . '\', \'' . @Util::val($ControlProvider) . '\', ' . htmlentities($NextFunction) . ');');
+            $Event = 'sendRequest(\'' . @Util::val($Action->adapter) . '\', \'' . @Util::val($Action->method, 'trigger') . '\', ' . (isset($Action->payload) ? htmlentities(Base::replaceProperties(json_encode($Action->payload), $Control)) : '{ }') . ', this, \'' . @Util::val($Action->sound) . '\', \'' . @Util::val($ControlProvider) . '\', ' . htmlentities($NextFunction) . ');';
+            if ($CreateClickEvent) return Base::getClickEvent($Event);
+            else return $Event;
+
 
         } else if (isset($Control->action)) {
 
-            return Base::getClickEvent(Base::replaceProperties($Control->action, $Control));
+            if ($CreateClickEvent) return Base::getClickEvent(Base::replaceProperties($Control->action, $Control));
+            else return Base::replaceProperties($Control->action, $Control);
         
         } else {
 

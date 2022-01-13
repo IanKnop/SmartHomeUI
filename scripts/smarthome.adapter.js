@@ -233,7 +233,7 @@ function sendRequest(adapter, requestMode, payload, refreshControl = null, sound
     if (sound != '') SmartHomeUI.Audio.playSound(sound.toUpperCase());
     
     // CALL ADAPTER BASED REQUEST HANDLING
-    replaceFieldValues(payload);
+    replaceFieldValues(payload, null, refreshControl);
     Adapters[adapter].sendRequest(requestMode, payload, refreshControl, controlProvider, nextFunction);
 
 }
@@ -245,7 +245,7 @@ function handleResponse(adapter, responseMode, response, payload = null, refresh
 
     if (adapter == null || adapter == '') adapter = DEFAULT_ADAPTER;
     
-    replaceFieldValues(payload, response);
+    replaceFieldValues(payload, response, refreshControl);
     //replaceFieldValues(response);
     Adapters[adapter].handleResponse(responseMode, response, payload, refreshControl);
 
@@ -262,7 +262,7 @@ function getBindingValue(bindingId, thisDataset = Dataset) {
     })[0].val;
 }
 
-function replaceFieldValues(sourceObject, responseDataset = null, thisDataset = Dataset) {
+function replaceFieldValues(sourceObject, responseDataset = null, sourceControl = null, thisDataset = Dataset) {
     
     /* replaceFieldValues()___________________________________________________
     Replaces values for given field names in (payload)-object                */
@@ -271,7 +271,7 @@ function replaceFieldValues(sourceObject, responseDataset = null, thisDataset = 
 
         var value = sourceObject[key];
 
-        if (typeof value != 'string') replaceFieldValues(value, responseDataset, thisDataset);
+        if (typeof value != 'string') replaceFieldValues(value, responseDataset, sourceControl, thisDataset);
         else {
 
             if (value.includes('{response}')) value = value.replace('{response}', (typeof responseDataset === 'string' ? responseDataset : JSON.stringify(responseDataset)));
@@ -285,10 +285,25 @@ function replaceFieldValues(sourceObject, responseDataset = null, thisDataset = 
             while (value.includes('{[')) {
 
                 var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
-                
-                if (Dataset[fieldName.toLowerCase()] != undefined && typeof Dataset[fieldName.toLowerCase()] === 'string') value = value.replace('{[' + fieldName + ']}', Dataset[fieldName.toLowerCase()]);
-                else if (Dataset[fieldName.toLowerCase()] != undefined) value = value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName.toLowerCase()]));
-                else value = value.replace('{[' + fieldName + ']}', null);
+
+                if (fieldName.includes('::')) {
+
+                    var fieldId = fieldName.split('::')[1];
+                    var adapterId = fieldName.split('::')[0];
+                    var replaceValue = '';
+
+                    if (ControlProviders[adapterId] != undefined) replaceValue = ControlProviders[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
+                    else if (Adapters[adapterId] != undefined) replaceValue = Adapters[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
+
+                    value = value.replace('{[' + fieldName + ']}', replaceValue);
+
+                } else {
+
+                    if (Dataset[fieldName.toLowerCase()] != undefined && typeof Dataset[fieldName.toLowerCase()] === 'string') value = value.replace('{[' + fieldName + ']}', Dataset[fieldName.toLowerCase()]);
+                    else if (Dataset[fieldName.toLowerCase()] != undefined) value = value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName.toLowerCase()]));
+                    else value = value.replace('{[' + fieldName + ']}', null);
+    
+                }
             }
 
             sourceObject[key] = value;

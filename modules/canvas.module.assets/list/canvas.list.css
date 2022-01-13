@@ -13,15 +13,29 @@ list {
 
 }
 
+.list-table {
+
+    font-size: 2.5vmin;
+
+}
+
 .list-th {
 
     text-align: left;
     text-transform: uppercase;
+    color: #a3f5f5;
 
 }
 
 .list-td {
 
     text-align: left;
+
+}
+
+.list-content {
+
+    text-align: left;
+    cursor: pointer;
 
 }
