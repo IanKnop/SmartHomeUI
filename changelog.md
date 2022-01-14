@@ -8,6 +8,11 @@ www.knop.family
 Change Log
 ========================================================= 
 
+V0.2.3 - Lists, Actions and Responses
+
+   - Added further functionalities to action/handle mechanism allowing easy interactions with various adapters
+   - Added list control for canvas to draw simple tables with clickable items
+
 V0.2.2 - Interactive Canvas Controls
 
    - Added functions for changing values in canvas controls by user input to create form controls
