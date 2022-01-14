@@ -30,6 +30,9 @@ list {
 .list-td {
 
     text-align: left;
+    overflow: auto;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
 }
 

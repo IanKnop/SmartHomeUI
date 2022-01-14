@@ -85,8 +85,23 @@ function List() {
         /* replaceFieldValue()___________________________________________________
         Replaces list specific value for given field names in (payload)-object  */
         
-        return sourceControl.firstChild.rows[responseDataset.row].cells[responseDataset.column].innerText;
+        if (isNaN(fieldId)) fieldId = this.getFieldId(sourceControl, fieldId);
+        return sourceControl.firstChild.rows[responseDataset.row].cells[fieldId].innerText;
     }
+
+    List.prototype.getFieldId = function (sourceControl, fieldName) {
+
+        var returnIndex = -1;
+        sourceControl.FirstChild.rows[0].children.forEach(headerCell => {
+            
+            returnIndex++;
+            if (headerCell.innerText.toLowerCase() == fieldId.toLowerCase()) return returnIndex;
+        
+        });
+
+        return null;
+    }
+
 
     List.prototype.clickItem = function (fieldName, row, column, sender) {
 
@@ -103,7 +118,7 @@ function List() {
             var responseAdapter = (action.handle.adapter != undefined ? action.handle.adapter : action.adapter);
 
             payload.response = response; 
-            payload.request = action.payload; 
+            payload.request = action.handle.payload; 
             
             sendRequest(responseAdapter, action.handle.method, payload, refreshControl); 
 

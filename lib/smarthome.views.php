@@ -24,7 +24,7 @@ class Views {
 
             while (Util::stringContains($ReturnValue, '{{['))
             {
-                $Expression = substr($ReturnValue, strpos($ReturnValue, '{{[') + 3, strpos($ReturnValue, ']}}') - strpos($ReturnValue, '{{[') - 3);
+                $Expression = substr($ReturnValue, strpos($ReturnValue, '{{[') + 3, strpos($ReturnValue, ']}}', strpos($ReturnValue, '{{[')) - strpos($ReturnValue, '{{[') - 3);
                 if (Util::startsWith(strtoupper($Expression), 'TEMPLATE:'))
                 {
                     // INCLUDE EXTERNAL TEMPLATE

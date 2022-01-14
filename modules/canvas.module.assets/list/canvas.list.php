@@ -41,7 +41,7 @@
                     "binding"           => @Util::val($Source->binding, (isset($Source->bindingProvider) && $Source->bindingProvider == 'internal' ? '#' : '')),
                     "binding-provider"  => @Util::val($Source->bindingProvider, 'cc-provider="internal"', 'cc-provider="', '" '),
 
-                    "action"            => @Util::val(htmlentities(json_encode($Source->action))), // $this->getEventFromAction($Source, false),
+                    "action"            => @Util::val(htmlentities(json_encode($Source->action))), 
                     "update"            => @Util::val($Source->update, 'true')
 
 
