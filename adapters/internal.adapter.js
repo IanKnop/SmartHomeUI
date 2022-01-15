@@ -51,9 +51,10 @@ function internalAdapter() {
                 var currentValue  = this.dataset[targetId] != undefined ? this.dataset[targetId] : targetControl.getAttribute('cc-value');
 
                 var mode = (payload.mode != undefined ? payload.mode : 'set');
+                var setValue = replaceFieldValue(Array.isArray(payload.value) ? payload.value[index] : payload.value, responseData, senderControl, this.Dataset);
+                
                 //var format = (payload.valueFormat != undefined ? payload.valueFormat : 'numeric');
 
-                var setValue = (Array.isArray(payload.value) ? payload.value[index] : payload.value);
                 switch (mode) {
 
                     case 'set':
@@ -110,12 +111,16 @@ function internalAdapter() {
                         var newValue = parseFloat(targetControl.getAttribute('cc-value'));
 
                 }
-
-                if (this.checkMinMax(targetControl, newValue)) this.dataset[targetId] = newValue;
-                /*{
+                
+                if (this.checkMinMax(targetControl, newValue)) {
+                    
                     targetControl.setAttribute('cc-value', newValue);
                     this.dataset[targetId] = newValue;
-                } */
+                
+                } 
+                
+                updateDataset(this.dataset);
+                refreshControl(targetControl, this);
 
             }
             break;

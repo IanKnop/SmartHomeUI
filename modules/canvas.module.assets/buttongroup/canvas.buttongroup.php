@@ -101,7 +101,7 @@ class ButtonGroup extends Control implements ICanvasControl
         /* getControlType()__________________________________________________________
         Returns inner control type based on type name (i.e. text -> value)          */
 
-        if ($TypeId == 'text' || $TypeId == 'numeric' || $TypeId == 'date' || $TypeId == 'time' || $TypeId == 'html') return 'value';
+        if ($TypeId == 'text' || $TypeId == 'numeric' || $TypeId == 'date' || $TypeId == 'time' || $TypeId == 'shorttime' || $TypeId == 'html') return 'value';
         else if ($TemplateId && ($TypeId == 'button' || $TypeId == 'switch' || $TypeId == 'select' || $TypeId == 'navigate')) return 'button';
         else if ($TypeId != '') return strtolower($TypeId);
         else return self::DEFAULT_CONTROL_TYPE;

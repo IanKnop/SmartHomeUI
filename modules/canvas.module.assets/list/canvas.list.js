@@ -33,11 +33,9 @@ function List() {
         if (Array.isArray(content)) {
 
             var isFirstRow = true;
-            var currentRow = 0;
-
+           
             content.forEach(row => {
 
-                var currentColumn = 0;
                 if (typeof row === 'string') {
                     
                     // SIMPLE STRING DATA
@@ -49,8 +47,7 @@ function List() {
                     // LIST WITHOUT HEADERS (= STRING ARRAY)
                     returnValue += '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '">'; row.forEach(function(col) { 
                         
-                        returnValue += '<td class="list-td" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', ' + currentColumn + ', ' + currentRow + ', \'' + control.id + '\')>' + col + '</td>';
-                        currentColumn++;
+                        returnValue += '<td class="list-td" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + control.id + '\')>' + col + '</td>';
 
                     }); returnValue += '</tr>';
 
@@ -58,20 +55,22 @@ function List() {
 
                     // LIST WITH HEADERS (= OBJECT ARRAY)
                     
-                    returnValue += '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '">'; 
-                    if (isFirstRow) Object.keys(row).forEach(function(col) { returnValue += '<th class="list-th" style="' + (styles != null && styles.header != undefined ? styles.header : '') + '">' + col + '</th>' });
-                    else Object.keys(row).forEach(function(col) { 
+                    if (isFirstRow) {
                         
+                        returnValue += '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '">'; 
+                        Object.keys(row).forEach(function(col) { returnValue += '<th class="list-th" style="' + (styles != null && styles.header != undefined ? styles.header : '') + '">' + col + '</th>' });
+                        returnValue += '</tr>';
+                    }
+
+                    returnValue += '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '">'; 
+                    Object.keys(row).forEach(function(col) { 
                     
-                        returnValue += '<td class="list-td" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', ' + currentColumn + ', ' + currentRow + ', \'' + control.id + '\')">' + row[col] + '</td>' 
-                        currentColumn++;
+                        returnValue += '<td class="list-td" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + control.id + '\')">' + row[col] + '</td>' 
                     
                     }); 
                     returnValue += '</tr>';
-
                 }
-                
-                currentRow++;
+
                 isFirstRow = false;
             });
 
@@ -91,6 +90,9 @@ function List() {
 
     List.prototype.getFieldId = function (sourceControl, fieldName) {
 
+        /* replaceFieldValue()___________________________________________________
+        Finds column based on given header title                                */
+        
         var returnIndex = -1;
         sourceControl.FirstChild.rows[0].children.forEach(headerCell => {
             
@@ -103,13 +105,16 @@ function List() {
     }
 
 
-    List.prototype.clickItem = function (fieldName, row, column, sender) {
+    List.prototype.clickItem = function (fieldName, senderRow, list) {
 
         /* clickItem()________________________________________________________
         Raises list click event based on cc-action definition                */
 
-        var senderList = document.getElementById(sender);
+        var senderList = document.getElementById(list);
         var action = JSON.parse(senderList.getAttribute('cc-action'));
+
+        var column = senderRow.cellIndex;
+        var row = senderRow.parentElement.rowIndex;
         
         replaceFieldValues(action, { row: row, column: column  }, senderList);
         sendRequest(action.adapter, action.method, action.payload, senderList, '', 'list', function(response, adapter, refreshControl) { 

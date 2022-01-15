@@ -113,11 +113,11 @@ var SmartHomeUI = new function () {
                 if (returnFunction != null && this.readyState == 4 && this.status == 200) {
                     if (paramValue != null) {
 
-                        returnFunction(JSON.parse(this.responseText), paramValue);
+                        returnFunction(JSON.parse(this.responseText != '' ? this.responseText : '{}'), paramValue);
 
                     } else {
 
-                        returnFunction(JSON.parse(this.responseText));
+                        returnFunction(JSON.parse(this.responseText != '' ? this.responseText : '{}'));
 
                     }
                 } else {
