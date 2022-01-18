@@ -107,7 +107,7 @@ function applyCondition(control, conditionObject, data) {
 
     if (data != null && data != {}) conditionObject.forEach(function (condition) {
 
-        var binding = condition.binding.toLowerCase();
+        var binding = condition.binding;
         var bindingValue = (data[binding] != null ? data[binding] : null);
 
         // EVALUATE CONDITION
@@ -301,40 +301,43 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
     /* replaceFieldValue()___________________________________________________
     Replaces field variables in given string value                          */
 
-    // COMPLETE RESPONSE
-    if (value.includes('{response}')) value = value.replace('{response}', (typeof responseDataset === 'string' ? responseDataset : JSON.stringify(responseDataset)));
+    if (typeof value === 'string') {
 
-    // RESPONSE FIEDS
-    var lastPosition = 0;
-    while (value.indexOf('{response.', lastPosition) != - 1) {
+        // COMPLETE RESPONSE
+        if (value.includes('{response}')) value = value.replace('{response}', (typeof responseDataset === 'string' ? responseDataset : JSON.stringify(responseDataset)));
 
-        var propertyId = value.substring(value.indexOf('{response.') + 10, value.indexOf('}', value.indexOf('{response.')));
+        // RESPONSE FIEDS
+        var lastPosition = 0;
+        while (value.indexOf('{response.', lastPosition) != - 1) {
 
-        if (responseDataset != null && responseDataset[propertyId] != undefined) value = value.replace('{response.' + propertyId + '}', responseDataset[propertyId]);
-        lastPosition = value.indexOf('{response.') + 1;
-    }
+            var propertyId = value.substring(value.indexOf('{response.') + 10, value.indexOf('}', value.indexOf('{response.')));
 
-    while (value.includes('{[') && value.includes(']}')) {
+            if (responseDataset != null && responseDataset[propertyId] != undefined) value = value.replace('{response.' + propertyId + '}', responseDataset[propertyId]);
+            lastPosition = value.indexOf('{response.') + 1;
+        }
 
-        var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
+        while (value.includes('{[') && value.includes(']}')) {
 
-        if (fieldName.includes('::')) {
+            var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
 
-            var fieldId = fieldName.split('::')[1];
-            var adapterId = fieldName.split('::')[0];
-            var replaceValue = '';
+            if (fieldName.includes('::')) {
 
-            if (ControlProviders[adapterId] != undefined) replaceValue = ControlProviders[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
-            else if (Adapters[adapterId] != undefined) replaceValue = Adapters[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
+                var fieldId = fieldName.split('::')[1];
+                var adapterId = fieldName.split('::')[0];
+                var replaceValue = '';
 
-            value = value.replace('{[' + fieldName + ']}', replaceValue);
+                if (ControlProviders[adapterId] != undefined) replaceValue = ControlProviders[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
+                else if (Adapters[adapterId] != undefined) replaceValue = Adapters[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
 
-        } else {
+                value = value.replace('{[' + fieldName + ']}', replaceValue);
 
-            if (Dataset[fieldName] != undefined && typeof Dataset[fieldName] === 'string') value = value.replace('{[' + fieldName + ']}', Dataset[fieldName]);
-            else if (Dataset[fieldName] != undefined) value = value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName]));
-            else value = value.replace('{[' + fieldName + ']}', null);
+            } else {
 
+                if (Dataset[fieldName] != undefined && typeof Dataset[fieldName] === 'string') value = value.replace('{[' + fieldName + ']}', Dataset[fieldName]);
+                else if (Dataset[fieldName] != undefined) value = value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName]));
+                else value = value.replace('{[' + fieldName + ']}', null);
+
+            }
         }
     }
 

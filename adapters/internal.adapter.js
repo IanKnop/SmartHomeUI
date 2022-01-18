@@ -83,6 +83,7 @@ internalAdapter.prototype.modifyValues = function (payload, senderControl, respo
 
         switch (payload.mode != undefined ? payload.mode : 'set') {
 
+            // VALUE SET
             case 'toggle':
 
                 // TOGGLE VALUE "true/false"
@@ -95,6 +96,7 @@ internalAdapter.prototype.modifyValues = function (payload, senderControl, respo
                 var newValue = setValue;
                 break;
 
+            // MATH
             case 'add': case 'plus': case 'substract': case 'minus':
                 
                 // MATH: ADDITION / SUBSTRACTION
@@ -134,24 +136,27 @@ internalAdapter.prototype.modifyValues = function (payload, senderControl, respo
         }
 
         // SET NEW VALUE AND UPDATE CONTROLS
-        this.setValue(newValue, target, senderControl);
+        this.setValue(target, newValue, senderControl);
     }
 }
 
-internalAdapter.prototype.setValue = function (value, target, senderControl = null) {
+internalAdapter.prototype.setValue = function (target, value, senderControl = null) {
 
     /* setValue()_____________________________________________________________
     Refreshes dataset and control state with given value                     */
 
     if (target.control == null || this.checkMinMax(target.control, value)) {
 
-        if (target.arrayIndex == -1 || isNaN(target.arrayIndex)) this.dataset[target.id] = value;
+        if (target.arrayIndex == -1) this.dataset[target.id] = value;
         else {
 
             if (this.dataset[target.id] == undefined) this.dataset[target.id] = [];
-            this.dataset[target.id][target.arrayIndex] = value;
+            
+            if (target.arrayMode == 'range') for (index = target.arrayStart; index <= target.arrayEnd; index++) this.dataset[target.id][index] = value;
+            else this.dataset[target.id][target.arrayIndex] = value;
         }
-    }
+
+    } 
 
     updateDataset(this.dataset);
 
@@ -178,7 +183,9 @@ internalAdapter.prototype.refreshState = function (control, updateTimestamp = nu
             
         } else {
 
-            var binding = this.getBindingInfo(adapterControl.binding); this.initDataset(binding, control);
+            var binding = this.getBindingInfo(adapterControl.binding); 
+            this.initDataset(binding, control);
+            
             var value = (binding.arrayIndex == -1 ? this.dataset[binding.id] : this.dataset[binding.id][binding.arrayIndex]);
 
             // ADD ADDITIONAL KEY IF 'cc-value-key' IS SET
@@ -201,13 +208,13 @@ internalAdapter.prototype.initDataset = function(binding, control) {
 
     if (this.dataset[binding.id] == undefined && binding.arrayIndex == -1) {
                 
-        this.dataset[binding.id] = control.getAttribute('cc-value');
+        this.dataset[binding.id] = control.getAttribute('cc-value') != null ? control.getAttribute('cc-value') : '';
 
     }
     else if (this.dataset[binding.id] == undefined && binding.arrayIndex > -1) {
 
         this.dataset[binding.id] = [];
-        this.dataset[binding.id][binding.arrayIndex] = control.getAttribute('cc-value');
+        if (control.getAttribute('cc-value') != null) this.dataset[binding.id][binding.arrayIndex] = control.getAttribute('cc-value');
     }
 }
 
@@ -224,12 +231,26 @@ internalAdapter.prototype.getBindingInfo = function (tagetDef, senderControl = n
         returnObject.id = tagetDef.substring(0, tagetDef.indexOf('['));
         returnObject.arrayIndex = tagetDef.substring(tagetDef.indexOf('[') + 1, tagetDef.indexOf(']'));
         
-        if (isNaN(returnObject.arrayIndex) && (returnObject.arrayIndex.startsWith('?') || returnObject.arrayIndex.startsWith('!'))) {
+        if (!isNaN(returnObject.arrayIndex)) {
             
+            // STANDARD ARRAY
+            returnObject.arrayMode = 'array';
+
+        } else if (returnObject.arrayIndex.startsWith('?') || returnObject.arrayIndex.startsWith('!')) {
+            
+            // BOOL OR REVERSE-BOOL ARRAY METHOD
             returnObject.arrayMode = returnObject.arrayIndex.startsWith('?') ? 'bool' : 'reverse-bool';
             returnObject.arrayIndex = returnObject.arrayIndex.substring(1);
+       
+        } else if (returnObject.arrayIndex.includes('-')) {
+            
+            // ARRAY RANGE METHOD
+            returnObject.arrayMode = 'range';
+            returnObject.arrayStart = returnObject.arrayIndex.substring(0, returnObject.arrayIndex.indexOf('-'));
+            returnObject.arrayEnd = returnObject.arrayIndex.substring(returnObject.arrayIndex.indexOf('-') + 1);
         }
-        else returnObject.arrayMode = 'array';
+
+        returnObject.control = null;
 
     } else {
 
@@ -249,6 +270,7 @@ internalAdapter.prototype.getCurrentValue = function (target) {
     Gets current value based on dataset or control                         */
 
     if (target.arrayIndex == -1) return this.dataset[target.id] != undefined ? this.dataset[target.id] : (target.control != undefined ? target.control.getAttribute('cc-value') : '');
+    else if (target.arrayMode == 'range' && this.dataset[target.id] != undefined) return this.dataset[target.id][target.arrayStart];
     else if (!isNaN(target.arrayIndex)) return this.dataset[target.id] != undefined && this.dataset[target.id][target.arrayIndex] != undefined ? this.dataset[target.id][target.arrayIndex] : '';
     else return '';
 }
@@ -259,7 +281,7 @@ internalAdapter.prototype.parseSetValue = function (setValue, target) {
     Parses set value which can be single or array value                    */
 
     var returnValue = setValue;
-    if (isNaN(target.arrayIndex) && setValue.includes(target.arrayIndex)) {
+    if (isNaN(target.arrayIndex) && target.arrayMode != 'range' && setValue.includes(target.arrayIndex)) {
 
         var returnValue = [];
 
