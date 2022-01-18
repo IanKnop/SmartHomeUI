@@ -134,7 +134,7 @@ function updateDataset(refreshData, parentObject = '') {
 
         Object.keys(refreshData).forEach(key => {
 
-            var bindingId = (parentObject + key).toLowerCase();
+            var bindingId = (parentObject + key); //.toLowerCase();
 
             if (!(typeof refreshData[key] === 'object')) Dataset[bindingId] = refreshData[key];
             else Dataset[bindingId] = refreshData[key]; //'[object]';
@@ -162,9 +162,7 @@ function refreshControl(control, adapter) {
     Refreshes control using assigned adapter                                  */
 
     var bindingId = control.getAttribute('cc-binding');
-
-    if (bindingId == null || bindingId == '' || bindingId == '#') var bindValue = control.getAttribute('cc-value');
-    else var bindValue = Dataset[bindingId.toLowerCase()];
+    var bindValue = getBindingValue(bindingId, control);
 
     if (bindValue != undefined) {
         
@@ -257,15 +255,32 @@ function handleResponse(adapter, responseMode, response, payload = null, refresh
 
 }
 
-function getBindingValue(bindingId, thisDataset = Dataset) {
+function getBindingValue(bindingId, control = null, thisDataset = Dataset) {
 
     /* getBindingValue()______________________________________________________
     Returns binding value based on given binding id and dataset              */
 
-    return thisDataset.filter(item => {
-        if (item.id != undefined) return item.id.toLowerCase() === bindingId;
-        else return { val: null };
-    })[0].val;
+    var bindValue = null;
+
+    if (bindingId == null || bindingId == '' || bindingId == '#') {
+        
+        var bindValue = (control != null ? control.getAttribute('cc-value') : null);
+
+    }
+    else if (bindingId.includes('[') && !bindingId.startsWith('{[')) {
+
+        var arrayName = bindingId.substring(0, bindingId.indexOf('['));
+        var arrayIndex = bindingId.substring(bindingId.indexOf('[') + 1, bindingId.indexOf(']'));
+        
+        if (thisDataset[arrayName] != undefined && thisDataset[arrayName][arrayIndex] != undefined) var bindValue = thisDataset[arrayName][arrayIndex];
+        
+    } else {
+        
+        var bindValue = thisDataset[bindingId];
+    
+    }
+
+    return bindValue;
 }
 
 function replaceFieldValues(sourceObject, responseDataset = null, sourceControl = null, thisDataset = Dataset) {
@@ -316,8 +331,8 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
 
         } else {
 
-            if (Dataset[fieldName.toLowerCase()] != undefined && typeof Dataset[fieldName.toLowerCase()] === 'string') value = value.replace('{[' + fieldName + ']}', Dataset[fieldName.toLowerCase()]);
-            else if (Dataset[fieldName.toLowerCase()] != undefined) value = value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName.toLowerCase()]));
+            if (Dataset[fieldName] != undefined && typeof Dataset[fieldName] === 'string') value = value.replace('{[' + fieldName + ']}', Dataset[fieldName]);
+            else if (Dataset[fieldName] != undefined) value = value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName]));
             else value = value.replace('{[' + fieldName + ']}', null);
 
         }
