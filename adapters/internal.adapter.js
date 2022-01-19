@@ -34,9 +34,6 @@ internalAdapter.prototype.sendRequest = function (requestMode, payload, senderCo
     var responseData = (payload.response != undefined ? payload.response : null);
     if (responseData != null) payload = payload.request;
 
-    var targetId = (payload.target != undefined && payload.target.id != undefined ? payload.target.id : '');
-    var targetControl = (document.getElementById(targetId) != undefined ? document.getElementById(targetId) : senderControl);
-
     switch (requestMode.toLowerCase()) {
 
         // VALUE: Modify value of control or variable
@@ -45,25 +42,12 @@ internalAdapter.prototype.sendRequest = function (requestMode, payload, senderCo
             this.setValues(payload, senderControl, responseData);
             break;
 
-        // SWITCH: Used to select or deselect state and save information to given variable
-        case 'switch':
-
-            break;
-
-        // LIST: Used for scrolling through a LIST of values with up/down-buttons and select one 
-        case 'list':
-
-            break;
-
         // MSG: Simple message output mainly for debugging
         case 'msg':
 
             alert(payload.message);
             break;
     }
-
-    //updateDataset(this.dataset);
-    //refreshControl(targetControl, this);
 }
 
 internalAdapter.prototype.setValues = function (payload, senderControl, responseData) {
@@ -77,12 +61,13 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
     // ITERATE VALUE CHANGE REQUESTS
     for (var index = 0; index < payload.target.length; index++) {
 
+        var mode = payload.mode != undefined ? payload.mode : 'set';
         var target = this.getBindingInfo(payload.target[index], senderControl);
-        
+
         var value = this.getCurrentValue(target);
         var setValue = this.parseSetValue(payload.value != undefined ? replaceFieldValue(Array.isArray(payload.value) ? payload.value[index] : payload.value, responseData, senderControl, this.Dataset) : null, target);
 
-        switch (payload.mode != undefined ? payload.mode : 'set') {
+        switch (mode) {
 
             // VALUE SET
             case 'toggle':
@@ -97,18 +82,9 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
                 var newValue = setValue;
                 break;
 
-            case 'list':
-
-                // SCROLL THROUGH LIST OF VALUES
-                var newIndex = (value == null ? 0 : this.getListNextIndex(payload, value));
-                var newValue = (payload.valueKeys != undefined ? payload.valueKeys[newIndex] : payload.values[newIndex]);
-
-                if (payload.valueKeys != undefined) target.control.setAttribute('cc-value-key', (payload.valueKeys != undefined ? payload.valueKeys[newIndex] : payload.value[newIndex]));
-                break;
-
             // MATH
             case 'add': case 'plus': case 'substract': case 'minus':
-                
+
                 // MATH: ADDITION / SUBSTRACTION
                 switch ((payload.valueFormat != undefined ? payload.valueFormat : 'numeric')) {
 
@@ -116,7 +92,7 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
 
                         if (value != null) {
                             var dateValue = new Date(); var short = (value.length == 5);
-                            var newValue = (new Date(dateValue.setHours(value.substring(0, 2), value.substring(3, 5), (short ? (payload.mode == 'substract' || payload.mode == 'minus' ? (-1 * setValue) : setValue) : value.substring(6, 8) + (payload.mode == 'substract' || payload.mode == 'minus' ? (-1 * setValue) : setValue))))).toTimeString().substring(0, (short ? 5 : 8));
+                            var newValue = (new Date(dateValue.setHours(value.substring(0, 2), value.substring(3, 5), (short ? (payload.mode == 'substract' || payload.mode == 'minus' ? (-1 * setValue) : setValue) : parseFloat(value.substring(6, 8)) + (payload.mode == 'substract' || payload.mode == 'minus' ? (-1 * setValue) : setValue))))).toTimeString().substring(0, (short ? 5 : 8));
                         }
                         break;
 
@@ -141,25 +117,14 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
 
             default:
 
-                // TRY TO GET FORMER VALUE FROM CONTROL
-                var newValue = parseFloat(target.control.getAttribute('cc-value'));
+                if (ControlProviders[mode] != undefined) var newValue = ControlProviders[mode].setValue(payload, target, value);
+                else var newValue = parseFloat(target.control.getAttribute('cc-value'));
 
         }
 
         // SET NEW VALUE AND UPDATE CONTROLS
         this.setValue(target, newValue, senderControl);
     }
-}
-
-internalAdapter.prototype.getListNextIndex = function(payload, value) {
-
-    /* getListNextIndex()_____________________________________________________
-    Gets index of next element in list based on current control value        */
-
-    var add = (payload.direction != undefined ? (payload.direction.toLowerCase() == 'up' ? 1 : -1) : 1);
-    var list = (payload.valueKeys != undefined ? payload.valueKeys : payload.values);
-    
-    return ((list.indexOf(value) + add > (list.length - 1) || list.indexOf(value) + add < 0) ? (add == 1 ? 0 : (list.length - 1)) : list.indexOf(value) + add);
 }
 
 internalAdapter.prototype.setValue = function (target, value, senderControl = null) {
@@ -169,27 +134,23 @@ internalAdapter.prototype.setValue = function (target, value, senderControl = nu
 
     if (target.control == null || this.checkMinMax(target.control, value)) {
 
-        if (target.arrayIndex == -1) {
+        if (target.mode == 'value') {
             
-            if (target.arrayMode == 'keys') {
-                
-                this.dataset[target.id + '.key'] = value; 
-                this.dataset[target.id] = JSON.parse(target.control.getAttribute('cc-values'))[JSON.parse(target.control.getAttribute('cc-value-keys')).indexOf(value)]; 
-            
-            } else {
-            
-                this.dataset[target.id] = value;
-            }
-        
+            this.dataset[target.id] = value;
+
+        } else if (target.mode == 'key') {
+
+            this.dataset[target.id + '.key'] = value;
+            this.dataset[target.id] = JSON.parse(target.control.getAttribute('cc-values'))[JSON.parse(target.control.getAttribute('cc-value-keys')).indexOf(value)];
+
         } else {
 
             if (this.dataset[target.id] == undefined) this.dataset[target.id] = [];
-            
-            if (target.arrayMode == 'range') for (index = target.arrayStart; index <= target.arrayEnd; index++) this.dataset[target.id][index] = value;
+
+            if (target.mode == 'range') for (index = target.from; index <= target.to; index++) this.dataset[target.id][index] = value;
             else this.dataset[target.id] = value;
         }
-
-    } 
+    }
 
     // UPDATE GLOBAL DATASET
     updateDataset(this.dataset);
@@ -198,10 +159,11 @@ internalAdapter.prototype.setValue = function (target, value, senderControl = nu
     else if (target.arrayIndex != -1) {
 
         // TARGET IS ARRAY AND MIGHT AFFECT MULTIPLE CONTROLS
-        AdapterControls.filter(control => { return control.binding.startsWith(target.id + '[') }).forEach(arrayControl => { 
-            
-            this.refreshState(arrayControl, Date.now()) }
-            
+        AdapterControls.filter(control => { return control.binding.startsWith(target.id + '[') }).forEach(arrayControl => {
+
+            this.refreshState(arrayControl, Date.now())
+        }
+
         );
 
     }
@@ -222,16 +184,16 @@ internalAdapter.prototype.refreshState = function (control, updateTimestamp = nu
             // RETURN INTERNAL EXPRESSION (i.e. current time)
             var value = this.parseExpression(getFieldName(control.getAttribute('cc-binding')));
             control.innerHTML = value;
-            
+
         } else {
 
-            var binding = this.getBindingInfo(adapterControl.binding); 
+            var binding = this.getBindingInfo(adapterControl.binding);
             this.initDataset(binding, control);
-            
-            var value = (binding.arrayIndex == -1 ? this.dataset[binding.id] : this.dataset[binding.id][binding.arrayIndex]);
+
+            var value = ((binding.mode == 'value' || binding.mode == 'key') ? this.dataset[binding.id] : this.dataset[binding.id][binding.arrayIndex]);
 
             // ADD ADDITIONAL KEY IF 'cc-value-key' IS SET
-            if (control.hasAttribute('cc-value-key') && this.dataset[adapterControl.id + '.key'] == undefined) 
+            if (control.hasAttribute('cc-value-key') && this.dataset[adapterControl.id + '.key'] == undefined)
                 this.dataset[adapterControl.id + '.key'] = control.getAttribute('cc-value-key');
         }
 
@@ -243,13 +205,13 @@ internalAdapter.prototype.refreshState = function (control, updateTimestamp = nu
 /* =========================================================
    TOOLS
    ========================================================= */
-internalAdapter.prototype.initDataset = function(binding, control) {
+internalAdapter.prototype.initDataset = function (binding, control) {
 
     /* initDataset()_______________________________________________________
     Initializes dataset for given binding                                 */
 
-    if (this.dataset[binding.id] == undefined && binding.arrayIndex == -1) {
-                
+    if (this.dataset[binding.id] == undefined && (binding.mode == 'value' || binding.mode == 'key') ) {
+
         this.dataset[binding.id] = control.getAttribute('cc-value') != null ? control.getAttribute('cc-value') : '';
 
     }
@@ -272,35 +234,34 @@ internalAdapter.prototype.getBindingInfo = function (tagetDef, senderControl = n
         // BINDING IS TARGETING AN ARRAY
         returnObject.id = tagetDef.substring(0, tagetDef.indexOf('['));
         returnObject.arrayIndex = tagetDef.substring(tagetDef.indexOf('[') + 1, tagetDef.indexOf(']'));
-        
+
         if (!isNaN(returnObject.arrayIndex)) {
-            
+
             // STANDARD ARRAY
-            returnObject.arrayMode = 'array';
+            returnObject.mode = 'array';
 
         } else if (returnObject.arrayIndex.startsWith('?') || returnObject.arrayIndex.startsWith('!')) {
-            
+
             // BOOL OR REVERSE-BOOL ARRAY METHOD
-            returnObject.arrayMode = returnObject.arrayIndex.startsWith('?') ? 'bool' : 'reverse-bool';
+            returnObject.mode = returnObject.arrayIndex.startsWith('?') ? 'bool' : 'reverse-bool';
             returnObject.arrayIndex = returnObject.arrayIndex.substring(1);
-       
+
         } else if (returnObject.arrayIndex.includes('-')) {
-            
+
             // ARRAY RANGE METHOD
-            returnObject.arrayMode = 'range';
-            returnObject.arrayStart = returnObject.arrayIndex.substring(0, returnObject.arrayIndex.indexOf('-'));
-            returnObject.arrayEnd = returnObject.arrayIndex.substring(returnObject.arrayIndex.indexOf('-') + 1);
+            returnObject.mode = 'range';
+            returnObject.from = returnObject.arrayIndex.substring(0, returnObject.arrayIndex.indexOf('-'));
+            returnObject.to = returnObject.arrayIndex.substring(returnObject.arrayIndex.indexOf('-') + 1);
         }
 
         returnObject.control = null;
 
     } else {
 
-        // SINGLE FIELD BINDING
+        // SINGLE VALUE OR KEY 
         returnObject.id = tagetDef;
-        returnObject.arrayIndex = -1;
         returnObject.control = document.getElementById(returnObject.id) != undefined ? document.getElementById(returnObject.id) : senderControl;
-        returnObject.arrayMode = returnObject.control.hasAttribute('cc-value-key') ? 'keys' : 'none';
+        returnObject.mode = (returnObject.control != null && returnObject.control.hasAttribute('cc-value-key')) ? 'key' : 'value';
     }
 
     return returnObject;
@@ -311,19 +272,23 @@ internalAdapter.prototype.getCurrentValue = function (target) {
     /* getCurrentValue()____________________________________________________
     Gets current value based on dataset or control                         */
 
-    if (target.arrayIndex == -1 && target.arrayMode != 'keys') 
-        return this.dataset[target.id] != undefined ? this.dataset[target.id] : (target.control != undefined ? target.control.getAttribute('cc-value') : '');
+    switch (target.mode) {
 
-    else if (target.arrayMode == 'keys' && this.dataset[target.id + '.key'] != undefined) 
-        return this.dataset[target.id + '.key'];
-    
-    else if (target.arrayMode == 'range' && this.dataset[target.id] != undefined) 
-        return this.dataset[target.id][target.arrayStart];
-    
-    else if (!isNaN(target.arrayIndex)) 
-        return this.dataset[target.id] != undefined && this.dataset[target.id][target.arrayIndex] != undefined ? this.dataset[target.id][target.arrayIndex] : '';
+        case 'value':
+            return this.dataset[target.id] != undefined ? this.dataset[target.id] : (target.control != undefined ? target.control.getAttribute('cc-value') : '');
+            
+        case 'key':
+            return this.dataset[target.id + '.key'];
+            
+        case 'range':
+            return this.dataset[target.id][target.from];
+            
+        case 'array':
+            return this.dataset[target.id] != undefined && this.dataset[target.id][target.arrayIndex] != undefined ? this.dataset[target.id][target.arrayIndex] : '';
 
-    else return '';
+        default:
+            return '';
+    }
 }
 
 internalAdapter.prototype.parseSetValue = function (setValue, target) {
@@ -332,17 +297,23 @@ internalAdapter.prototype.parseSetValue = function (setValue, target) {
     Parses set value which can be single or array value                    */
 
     var returnValue = setValue;
-    if (isNaN(target.arrayIndex) && target.arrayMode != 'range' && setValue.includes(target.arrayIndex)) {
 
+    if (['array', 'bool', 'reverse-bool'].includes(target.mode) && setValue.includes(target.arrayIndex)) {
+    
         var returnValue = [];
+        switch (target.mode) {
 
-        if (target.arrayMode == 'bool') setValue.split(target.arrayIndex).forEach(index => { returnValue[index] = true; });
-        else if (target.arrayMode == 'reverse-bool') setValue.split(target.arrayIndex).forEach(index => { returnValue[index] = false; });
-        else returnValue = setValue.split(target.arrayIndex);
-
-        return returnValue;
-
+            case 'bool':
+            case 'reverse-bool':
+                setValue.split(target.arrayIndex).forEach(index => { returnValue[index] = (target.mode == 'bool'); });
+                break;
+                
+            default:
+                if (!isNaN(target.arrayIndex)) returnValue = setValue.split(target.arrayIndex);
+                break;
+        }
     }
+
     return returnValue;
 }
 

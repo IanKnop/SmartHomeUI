@@ -104,6 +104,28 @@ function List() {
         return null;
     }
 
+    List.prototype.setValue = function (payload, target, value) {
+
+        /* setValue()____________________________________________________________
+        Sets value in list requested by adapter                                 */
+
+        var index = (value == null ? 0 : this.getListNextIndex(payload, value));
+        if (payload.valueKeys != undefined) target.control.setAttribute('cc-value-key', (payload.valueKeys != undefined ? payload.valueKeys[index] : payload.value[index]));
+        
+        return (payload.valueKeys != undefined ? payload.valueKeys[index] : payload.values[index]);
+
+    }
+        
+    List.prototype.getListNextIndex = function(payload, value) {
+
+        /* getListNextIndex()_____________________________________________________
+        Gets index of next element in list based on current control value        */
+    
+        var add = (payload.direction != undefined ? (payload.direction.toLowerCase() == 'up' ? 1 : -1) : 1);
+        var list = (payload.valueKeys != undefined ? payload.valueKeys : payload.values);
+        
+        return ((list.indexOf(value) + add > (list.length - 1) || list.indexOf(value) + add < 0) ? (add == 1 ? 0 : (list.length - 1)) : list.indexOf(value) + add);
+    }
 
     List.prototype.clickItem = function (fieldName, senderRow, list) {
 
@@ -120,7 +142,7 @@ function List() {
         sendRequest(action.adapter, action.method, action.payload, senderList, '', 'list', function(response, adapter, refreshControl) { 
             
             var payload = {}; 
-            var responseAdapter = (action.handle.adapter != undefined ? action.handle.adapter : action.adapter);
+            var responseAdapter = (action.handle.adapter != undefined ? action.handle.adapter : 'internal');
 
             payload.response = response; 
             payload.request = action.handle.payload; 

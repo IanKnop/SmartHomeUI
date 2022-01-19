@@ -181,7 +181,7 @@ function refreshControl(control, adapter) {
 
                 case 'numeric':
 
-                    bindValue = parseFloat((parseFloat(bindValue) + (offset != null ? parseFloat(offset) : 0))).toFixed((decimals != null ? parseFloat(decimals) : 2));
+                    bindValue = parseFloat((parseFloat(bindValue) + (offset != null ? parseFloat(offset) : 0))).toFixed((decimals != null ? parseFloat(decimals) : 0));
                     if (NUMBER_FORMAT == 'EU') bindValue = replaceComma(bindValue);
 
                 case 'html':
@@ -309,7 +309,7 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
         // COMPLETE RESPONSE
         if (value.includes('{response}')) value = value.replace('{response}', (typeof responseDataset === 'string' ? responseDataset : JSON.stringify(responseDataset)));
 
-        // RESPONSE FIEDS
+        // RESPONSE FIELDS
         var lastPosition = 0;
         while (value.indexOf('{response.', lastPosition) != - 1) {
 
@@ -319,32 +319,58 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
             lastPosition = value.indexOf('{response.') + 1;
         }
 
+        // STANDARD FIELDS
         while (value.includes('{[') && value.includes(']}')) {
 
             var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
 
-            if (fieldName.includes('::')) {
+            if (fieldName.includes('::')) value = replaceAdapterFieldValue(value, responseDataset, sourceControl, thisDataset);
+            else {
 
-                var fieldId = fieldName.split('::')[1];
-                var adapterId = fieldName.split('::')[0];
-                var replaceValue = '';
+                if (Dataset[fieldName] != undefined && typeof Dataset[fieldName] === 'string') {
 
-                if (ControlProviders[adapterId] != undefined) replaceValue = ControlProviders[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
-                else if (Adapters[adapterId] != undefined) replaceValue = Adapters[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
+                    value = value.replace('{[' + fieldName + ']}', Dataset[fieldName]);
 
-                value = value.replace('{[' + fieldName + ']}', replaceValue);
+                } else if (Dataset[fieldName] != undefined) {
+                    
+                    if (value == '{[' + fieldName + ']}') value = Dataset[fieldName]; 
+                    else value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName]));
+                    
+                } else {
+                    
+                    value = value.replace('{[' + fieldName + ']}', null);
 
-            } else {
-
-                if (Dataset[fieldName] != undefined && typeof Dataset[fieldName] === 'string') value = value.replace('{[' + fieldName + ']}', Dataset[fieldName]);
-                else if (Dataset[fieldName] != undefined) value = value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName]));
-                else value = value.replace('{[' + fieldName + ']}', null);
-
+                }
             }
         }
     }
 
     return value;
+}
+
+function replaceAdapterFieldValue(value, responseDataset = null, sourceControl = null, thisDataset = Dataset) {
+
+    /* replaceAdapterFieldValue()__________________________________________
+    Replaces fields by adapter                                            */ 
+    
+    var replaceValue = '';
+
+    var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
+
+    var fieldId = fieldName.split('::')[1];
+    var adapterId = fieldName.split('::')[0];
+    
+    if (ControlProviders[adapterId] != undefined) {
+        
+        replaceValue = ControlProviders[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
+    
+    } else if (Adapters[adapterId] != undefined) {
+        
+        replaceValue = Adapters[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
+
+    }
+    
+    return value.replace('{[' + fieldName + ']}', replaceValue);
 }
 
 
