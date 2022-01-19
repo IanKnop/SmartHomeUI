@@ -247,6 +247,8 @@ class ButtonGroup extends Control implements ICanvasControl
                 "type"              => @Util::val($Control->type, 'numeric'),
                 "value"             => @Util::val($Control->value, '', 'cc-value="', '"'),
                 "value-key"         => @Util::val($Control->valueKey, '', 'cc-value-key="', '"'),
+                "values"            => (isset($Control->values) ? 'cc-values="' . htmlentities(json_encode($Control->values)) . '"' : ''),
+                "value-keys"        => (isset($Control->valueKeys) ? 'cc-value-keys="' . htmlentities(json_encode($Control->valueKeys)) . '"' : ''),
                 "min"               => @Util::val($Control->min, '', 'cc-min="', '"'),
                 "max"               => @Util::val($Control->max, '', 'cc-max="', '"'),
                 "suffix"            => @Util::val($Control->suffix, '', 'cc-suffix="', '"'),

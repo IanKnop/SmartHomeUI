@@ -13,7 +13,9 @@
 // SETTING CONSTANTS
 const REFRESH_FREQUENCY = 100;  // 100 = 10 times per second
 const DATA_REFRESH_FREQUENCY = 50;   // 50  = every 5 seconds trigger API call
+
 const DEFAULT_ADAPTER = 'iobroker';
+const NUMBER_FORMAT = 'EU';
 
 // GLOBAL PROPERTIES
 var Adapters = {};
@@ -179,7 +181,8 @@ function refreshControl(control, adapter) {
 
                 case 'numeric':
 
-                    bindValue = parseFloat((parseFloat(bindValue) + (offset != null ? parseFloat(offset) : 0)).toFixed((decimals != null ? parseFloat(decimals) : 2))).toLocaleString();
+                    bindValue = parseFloat((parseFloat(bindValue) + (offset != null ? parseFloat(offset) : 0))).toFixed((decimals != null ? parseFloat(decimals) : 2));
+                    if (NUMBER_FORMAT == 'EU') bindValue = replaceComma(bindValue);
 
                 case 'html':
                 case 'text':

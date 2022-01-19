@@ -42,7 +42,7 @@ internalAdapter.prototype.sendRequest = function (requestMode, payload, senderCo
         // VALUE: Modify value of control or variable
         case 'value':
 
-            this.modifyValues(payload, senderControl, responseData);
+            this.setValues(payload, senderControl, responseData);
             break;
 
         // SWITCH: Used to select or deselect state and save information to given variable
@@ -66,9 +66,9 @@ internalAdapter.prototype.sendRequest = function (requestMode, payload, senderCo
     //refreshControl(targetControl, this);
 }
 
-internalAdapter.prototype.modifyValues = function (payload, senderControl, responseData) {
+internalAdapter.prototype.setValues = function (payload, senderControl, responseData) {
 
-    /* modifyValues()________________________________________________________
+    /* setValues()____________________________________________________________
     Modifies one or multiple values based on internal adapter request       */
 
     // TRANSFORM SINGLE VALUE TO ARRAY
@@ -78,6 +78,7 @@ internalAdapter.prototype.modifyValues = function (payload, senderControl, respo
     for (var index = 0; index < payload.target.length; index++) {
 
         var target = this.getBindingInfo(payload.target[index], senderControl);
+        
         var value = this.getCurrentValue(target);
         var setValue = this.parseSetValue(payload.value != undefined ? replaceFieldValue(Array.isArray(payload.value) ? payload.value[index] : payload.value, responseData, senderControl, this.Dataset) : null, target);
 
@@ -96,23 +97,33 @@ internalAdapter.prototype.modifyValues = function (payload, senderControl, respo
                 var newValue = setValue;
                 break;
 
+            case 'list':
+
+                // SCROLL THROUGH LIST OF VALUES
+                var newIndex = (value == null ? 0 : this.getListNextIndex(payload, value));
+                var newValue = (payload.valueKeys != undefined ? payload.valueKeys[newIndex] : payload.values[newIndex]);
+
+                if (payload.valueKeys != undefined) target.control.setAttribute('cc-value-key', (payload.valueKeys != undefined ? payload.valueKeys[newIndex] : payload.value[newIndex]));
+                break;
+
             // MATH
             case 'add': case 'plus': case 'substract': case 'minus':
                 
                 // MATH: ADDITION / SUBSTRACTION
-                switch (format) {
+                switch ((payload.valueFormat != undefined ? payload.valueFormat : 'numeric')) {
 
                     case 'time':
 
                         if (value != null) {
                             var dateValue = new Date(); var short = (value.length == 5);
-                            var newValue = (new Date(dateValue.setHours(value.substring(0, 2), value.substring(3, 5), (short ? setValue : value.substring(6, 8) + setValue)))).toTimeString().substring(0, (short ? 5 : 8));
+                            var newValue = (new Date(dateValue.setHours(value.substring(0, 2), value.substring(3, 5), (short ? (payload.mode == 'substract' || payload.mode == 'minus' ? (-1 * setValue) : setValue) : value.substring(6, 8) + (payload.mode == 'substract' || payload.mode == 'minus' ? (-1 * setValue) : setValue))))).toTimeString().substring(0, (short ? 5 : 8));
                         }
                         break;
 
+                    case 'numeric':
                     default:
 
-                        var additor = setValue * (mode == 'substract' || mode == 'minus' ? -1 : 1);
+                        var additor = setValue * (payload.mode == 'substract' || payload.mode == 'minus' ? -1 : 1);
                         var newValue = parseFloat(target.control.getAttribute('cc-value')) + parseFloat(additor);
                         break;
                 }
@@ -140,6 +151,17 @@ internalAdapter.prototype.modifyValues = function (payload, senderControl, respo
     }
 }
 
+internalAdapter.prototype.getListNextIndex = function(payload, value) {
+
+    /* getListNextIndex()_____________________________________________________
+    Gets index of next element in list based on current control value        */
+
+    var add = (payload.direction != undefined ? (payload.direction.toLowerCase() == 'up' ? 1 : -1) : 1);
+    var list = (payload.valueKeys != undefined ? payload.valueKeys : payload.values);
+    
+    return ((list.indexOf(value) + add > (list.length - 1) || list.indexOf(value) + add < 0) ? (add == 1 ? 0 : (list.length - 1)) : list.indexOf(value) + add);
+}
+
 internalAdapter.prototype.setValue = function (target, value, senderControl = null) {
 
     /* setValue()_____________________________________________________________
@@ -147,23 +169,43 @@ internalAdapter.prototype.setValue = function (target, value, senderControl = nu
 
     if (target.control == null || this.checkMinMax(target.control, value)) {
 
-        if (target.arrayIndex == -1) this.dataset[target.id] = value;
-        else {
+        if (target.arrayIndex == -1) {
+            
+            if (target.arrayMode == 'keys') {
+                
+                this.dataset[target.id + '.key'] = value; 
+                this.dataset[target.id] = JSON.parse(target.control.getAttribute('cc-values'))[JSON.parse(target.control.getAttribute('cc-value-keys')).indexOf(value)]; 
+            
+            } else {
+            
+                this.dataset[target.id] = value;
+            }
+        
+        } else {
 
             if (this.dataset[target.id] == undefined) this.dataset[target.id] = [];
             
             if (target.arrayMode == 'range') for (index = target.arrayStart; index <= target.arrayEnd; index++) this.dataset[target.id][index] = value;
-            else this.dataset[target.id][target.arrayIndex] = value;
+            else this.dataset[target.id] = value;
         }
 
     } 
 
+    // UPDATE GLOBAL DATASET
     updateDataset(this.dataset);
 
     if (target.control != undefined) this.refreshState(target.control, Date.now());
-    else if (target.arrayIndex != -1) AdapterControls.filter(control => { return control.binding.startsWith(target.id + '[') }).forEach(arrayControl => { this.refreshState(arrayControl, Date.now()) });
-}
+    else if (target.arrayIndex != -1) {
 
+        // TARGET IS ARRAY AND MIGHT AFFECT MULTIPLE CONTROLS
+        AdapterControls.filter(control => { return control.binding.startsWith(target.id + '[') }).forEach(arrayControl => { 
+            
+            this.refreshState(arrayControl, Date.now()) }
+            
+        );
+
+    }
+}
 
 internalAdapter.prototype.refreshState = function (control, updateTimestamp = null) {
 
@@ -257,8 +299,8 @@ internalAdapter.prototype.getBindingInfo = function (tagetDef, senderControl = n
         // SINGLE FIELD BINDING
         returnObject.id = tagetDef;
         returnObject.arrayIndex = -1;
-        returnObject.arrayMode = 'none';
         returnObject.control = document.getElementById(returnObject.id) != undefined ? document.getElementById(returnObject.id) : senderControl;
+        returnObject.arrayMode = returnObject.control.hasAttribute('cc-value-key') ? 'keys' : 'none';
     }
 
     return returnObject;
@@ -269,9 +311,18 @@ internalAdapter.prototype.getCurrentValue = function (target) {
     /* getCurrentValue()____________________________________________________
     Gets current value based on dataset or control                         */
 
-    if (target.arrayIndex == -1) return this.dataset[target.id] != undefined ? this.dataset[target.id] : (target.control != undefined ? target.control.getAttribute('cc-value') : '');
-    else if (target.arrayMode == 'range' && this.dataset[target.id] != undefined) return this.dataset[target.id][target.arrayStart];
-    else if (!isNaN(target.arrayIndex)) return this.dataset[target.id] != undefined && this.dataset[target.id][target.arrayIndex] != undefined ? this.dataset[target.id][target.arrayIndex] : '';
+    if (target.arrayIndex == -1 && target.arrayMode != 'keys') 
+        return this.dataset[target.id] != undefined ? this.dataset[target.id] : (target.control != undefined ? target.control.getAttribute('cc-value') : '');
+
+    else if (target.arrayMode == 'keys' && this.dataset[target.id + '.key'] != undefined) 
+        return this.dataset[target.id + '.key'];
+    
+    else if (target.arrayMode == 'range' && this.dataset[target.id] != undefined) 
+        return this.dataset[target.id][target.arrayStart];
+    
+    else if (!isNaN(target.arrayIndex)) 
+        return this.dataset[target.id] != undefined && this.dataset[target.id][target.arrayIndex] != undefined ? this.dataset[target.id][target.arrayIndex] : '';
+
     else return '';
 }
 
