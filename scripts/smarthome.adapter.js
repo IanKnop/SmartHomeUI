@@ -61,9 +61,52 @@ this.addEventListener("load", function () {
 });
 
 /* =========================================================
+    ADAPTER METHODS
+   ========================================================= */
+function sendRequest(adapter, requestMode, payload, refreshControl = null, sound = '', controlProvider = 'canvas', nextFunction = null) {
+
+    /* sendRequest()_______________________________________________________
+    Sends request to specified adapter                                    */
+
+    if (adapter == null || adapter == '') adapter = DEFAULT_ADAPTER;
+
+    // PLAY SOUND
+    if (sound != '') SmartHomeUI.Audio.playSound(sound.toUpperCase());
+
+    // REPLACE FIELD VALUES
+    replaceFieldValues(payload, null, refreshControl);
+    
+    // CALL ADAPTER BASED REQUEST HANDLING
+    Adapters[adapter].sendRequest(requestMode, payload, refreshControl, controlProvider, nextFunction);
+
+}
+
+function sendDefaultRequest(requestMode, payload, refreshControl = null, sound = '', controlProvider = 'canvas', nextFunction = null) {
+
+    /* sendDefaultRequest()________________________________________________
+    Sends request to default adapter                                      */
+
+    sendRequest(DEFAULT_ADAPTER, requestMode, payload, refreshControl, sound, controlProvider, nextFunction);
+
+}
+
+function handleResponse(adapter, responseMode, response, payload = null, refreshControl = null) {
+
+    /* handleResponse()____________________________________________________
+    Handles adapter based call-responses                                  */
+
+    if (adapter == null || adapter == '') adapter = DEFAULT_ADAPTER;
+
+    replaceFieldValues(payload, response, refreshControl);
+    //replaceFieldValues(response);
+    Adapters[adapter].handleResponse(responseMode, response, payload, refreshControl);
+
+}
+
+/* =========================================================
     ADAPTER DATA
    ========================================================= */
-function refreshStates(force = false) {
+   function refreshStates(force = false) {
 
     /* refreshStates()________________________________________________________
     Frequently refreshes states of elements based on interface values        */
@@ -102,29 +145,6 @@ function refreshStates(force = false) {
     refreshAdapterThread = setTimeout(refreshStates, REFRESH_FREQUENCY);
 }
 
-function applyCondition(control, conditionObject, data) {
-
-    /* applyCondition()___________________________________________________
-    Applys conditions to control (i.e. visibility)                       */
-
-    if (data != null && data != {}) conditionObject.forEach(function (condition) {
-
-        var binding = condition.binding;
-        var bindingValue = (data[binding] != null ? data[binding] : null);
-
-        // EVALUATE CONDITION
-        if (bindingValue != undefined && bindingValue != null) {
-            if (bindingValue == condition.value) {
-                if (condition.style != undefined) {
-                    for (var key in condition.style) {
-                        if (control.style.hasOwnProperty(key)) control.style[key] = condition.style[key];
-                    }
-                }
-            }
-        }
-    });
-}
-
 function updateDataset(refreshData, parentObject = '') {
 
     /* updateDataset()________________________________________________________
@@ -145,117 +165,59 @@ function updateDataset(refreshData, parentObject = '') {
     }
 }
 
-function triggerAdapterUpdate() {
+function getBindingInfo(tagetDef, senderControl = null) {
 
-    /* triggerAdapterUpdate()______________________________________________
-    Manually triggers control update (i.e. after button was pressed)      */
+    /* getBindingInfo()_____________________________________________________
+    Gets target information values as object                               */
 
-    clearTimeout(refreshAdapterThread);
-    setTimeout(function () { refreshStates(true); }, 1000);
+    var returnObject = {};
 
-}
+    if (tagetDef.startsWith('{[') || tagetDef.startsWith('{{[')) {
 
-/* =========================================================
-    ADAPTER METHODS
-   ========================================================= */
-function refreshControl(control, adapter) {
+        // STANDARD EXPRESSIONS OR FIELDS 
+        returnObject.id = tagetDef;
+        returnObject.fullId = tagetDef;
+        returnObject.control = null;
+        returnObject.mode = tagetDef.startsWith('{{[') ? 'field' : 'expression';
 
-    /* refreshControl()________________________________________________________
-    Refreshes control using assigned adapter                                  */
+    } else if (tagetDef.includes('[')) {
 
-    var bindingId = control.getAttribute('cc-binding');
-    var bindValue = getBindingValue(bindingId, control);
+        // BINDING IS TARGETING AN ARRAY
+        returnObject.id = tagetDef.substring(0, tagetDef.indexOf('['));
+        returnObject.arrayIndex = tagetDef.substring(tagetDef.indexOf('[') + 1, tagetDef.indexOf(']'));
 
-    if (bindValue != undefined) {
-        
-        if (control.hasAttribute('cc-type')) {
+        if (!isNaN(returnObject.arrayIndex)) {
 
-            var typeAttr = control.getAttribute('cc-type').toLowerCase();
-            var decimals = control.getAttribute('cc-decimals');
+            // STANDARD ARRAY
+            returnObject.mode = 'array';
 
-            var prefix = (control.hasAttribute('cc-prefix') ? control.getAttribute('cc-prefix') : '');
-            var suffix = (control.hasAttribute('cc-suffix') ? control.getAttribute('cc-suffix') : '');
-            var offset = control.getAttribute('cc-offset');
+        } else if (returnObject.arrayIndex.startsWith('?') || returnObject.arrayIndex.startsWith('!')) {
 
-            switch (typeAttr) {
+            // BOOL OR REVERSE-BOOL ARRAY METHOD
+            returnObject.mode = returnObject.arrayIndex.startsWith('?') ? 'bool' : 'reverse-bool';
+            returnObject.arrayIndex = returnObject.arrayIndex.substring(1);
 
-                case 'numeric':
+        } else if (returnObject.arrayIndex.includes('-')) {
 
-                    bindValue = parseFloat((parseFloat(bindValue) + (offset != null ? parseFloat(offset) : 0))).toFixed((decimals != null ? parseFloat(decimals) : 0));
-                    if (NUMBER_FORMAT == 'EU') bindValue = replaceComma(bindValue);
-
-                case 'html':
-                case 'text':
-                case 'src':
-
-                    if (typeAttr == 'src') control.src = prefix + bindValue + suffix;
-                    else control.innerHTML = prefix + bindValue + suffix;
-                    break;
-
-                case 'date':
-                case 'time':
-                case 'shorttime':
-
-                    bindValue = bindValue.substring(0, (typeAttr == 'shorttime' ? 5 : 8));
-                    control.innerHTML = prefix + bindValue + suffix;
-                    break;
-
-                case 'button':
-                case 'switch':
-                case 'select':
-                case 'scene':
-
-                    var controlProvider = (control.hasAttribute('cc-control-provider') ? control.getAttribute('cc-control-provider') : DEFAULT_CONTROL);
-                    ControlProviders[controlProvider].updateActiveState(control, adapter.checkActiveState(bindValue, typeAttr));
-                    break;
-
-                case 'list':
-
-                    var controlProvider = (control.hasAttribute('cc-control-provider') ? control.getAttribute('cc-control-provider') : DEFAULT_LIST_CONTROL);
-                    ControlProviders[controlProvider].parseList(control, bindValue);
-                    break;
-
-            }
+            // ARRAY RANGE METHOD
+            returnObject.mode = 'range';
+            returnObject.from = returnObject.arrayIndex.substring(0, returnObject.arrayIndex.indexOf('-'));
+            returnObject.to = returnObject.arrayIndex.substring(returnObject.arrayIndex.indexOf('-') + 1);
         }
+
+        returnObject.fullId = returnObject.id + '[' + returnObject.arrayIndex + ']';
+        returnObject.control = null;
+
+    } else {
+
+        // SINGLE VALUE OR KEY 
+        returnObject.id = tagetDef;
+        returnObject.fullId = tagetDef;
+        returnObject.control = document.getElementById(returnObject.id) != undefined ? document.getElementById(returnObject.id) : null;
+        returnObject.mode = (returnObject.control != null && returnObject.control.hasAttribute('cc-value-key')) ? 'key' : 'value';
     }
-}
 
-function sendDefaultRequest(requestMode, payload, refreshControl = null, sound = '', controlProvider = 'canvas', nextFunction = null) {
-
-    /* sendDefaultRequest()________________________________________________
-    Sends request to default adapter                                      */
-
-    sendRequest(DEFAULT_ADAPTER, requestMode, payload, refreshControl, sound, controlProvider, nextFunction);
-
-}
-
-function sendRequest(adapter, requestMode, payload, refreshControl = null, sound = '', controlProvider = 'canvas', nextFunction = null) {
-
-    /* sendRequest()_______________________________________________________
-    Sends request to specified adapter                                    */
-
-    if (adapter == null || adapter == '') adapter = DEFAULT_ADAPTER;
-
-    // PLAY SOUND
-    if (sound != '') SmartHomeUI.Audio.playSound(sound.toUpperCase());
-
-    // CALL ADAPTER BASED REQUEST HANDLING
-    replaceFieldValues(payload, null, refreshControl);
-    Adapters[adapter].sendRequest(requestMode, payload, refreshControl, controlProvider, nextFunction);
-
-}
-
-function handleResponse(adapter, responseMode, response, payload = null, refreshControl = null) {
-
-    /* handleResponse()____________________________________________________
-    Handles adapter based call-responses                                  */
-
-    if (adapter == null || adapter == '') adapter = DEFAULT_ADAPTER;
-
-    replaceFieldValues(payload, response, refreshControl);
-    //replaceFieldValues(response);
-    Adapters[adapter].handleResponse(responseMode, response, payload, refreshControl);
-
+    return returnObject;
 }
 
 function getBindingValue(bindingId, control = null, thisDataset = Dataset) {
@@ -266,7 +228,7 @@ function getBindingValue(bindingId, control = null, thisDataset = Dataset) {
     var bindValue = null;
 
     if (bindingId == null || bindingId == '' || bindingId == '#') {
-        
+
         var bindValue = (control != null ? control.getAttribute('cc-value') : null);
 
     }
@@ -274,13 +236,13 @@ function getBindingValue(bindingId, control = null, thisDataset = Dataset) {
 
         var arrayName = bindingId.substring(0, bindingId.indexOf('['));
         var arrayIndex = bindingId.substring(bindingId.indexOf('[') + 1, bindingId.indexOf(']'));
-        
+
         if (thisDataset[arrayName] != undefined && thisDataset[arrayName][arrayIndex] != undefined) var bindValue = thisDataset[arrayName][arrayIndex];
-        
+
     } else {
-        
+
         var bindValue = thisDataset[bindingId];
-    
+
     }
 
     return bindValue;
@@ -323,22 +285,35 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
         while (value.includes('{[') && value.includes(']}')) {
 
             var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
+            var binding = getBindingInfo(fieldName);
 
-            if (fieldName.includes('::')) value = replaceAdapterFieldValue(value, responseDataset, sourceControl, thisDataset);
+            if (binding.id.includes('::')) value = replaceAdapterFieldValue(value, responseDataset, sourceControl, thisDataset);
             else {
 
-                if (Dataset[fieldName] != undefined && typeof Dataset[fieldName] === 'string') {
+                if (Dataset[binding.id] != undefined && typeof Dataset[binding.id] === 'string') {
 
-                    value = value.replace('{[' + fieldName + ']}', Dataset[fieldName]);
+                    value = value.replace('{[' + binding.id + ']}', Dataset[binding.id]);
 
-                } else if (Dataset[fieldName] != undefined) {
+                } else if (Dataset[binding.id] != undefined) {
+
+                    if ((binding.mode == 'bool' || binding.mode == 'reverse-bool') && binding.arrayIndex == 'n') {
+
+                        // TRANSFORM ARRAY OF BOOL IN LIST OF TRUE OR FALSE INDEXES
+                        var computeValue = '';
+                        for (var index = 0; index <= Dataset[binding.id].length; index++)
+                            if (Dataset[binding.id][index] == (binding.mode == 'bool')) computeValue += index + ',';
+                         
+                        value = value.replace('{[' + binding.id + '[' + (binding.mode == 'bool' ? '?' : '!') + 'n]' + ']}', computeValue.substring(0, Math.max(0, computeValue.length - 1)));
                     
-                    if (value == '{[' + fieldName + ']}') value = Dataset[fieldName]; 
-                    else value.replace('{[' + fieldName + ']}', JSON.stringify(Dataset[fieldName]));
+                    } else {
+
+                        value = value.replace('{[' + binding.id + ']}', JSON.stringify(Dataset[binding.id]));
                     
+                    }
+
                 } else {
-                    
-                    value = value.replace('{[' + fieldName + ']}', null);
+
+                    value = value.replace('{[' + binding.id + ']}', null);
 
                 }
             }
@@ -351,38 +326,132 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
 function replaceAdapterFieldValue(value, responseDataset = null, sourceControl = null, thisDataset = Dataset) {
 
     /* replaceAdapterFieldValue()__________________________________________
-    Replaces fields by adapter                                            */ 
-    
-    var replaceValue = '';
+    Replaces field values using special adapter method                    */
 
-    var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
+    var replaceValue = ''; 
+    
+    var name = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
+    var field = name.split('::')[1];
+    var adapter = name.split('::')[0];
 
-    var fieldId = fieldName.split('::')[1];
-    var adapterId = fieldName.split('::')[0];
-    
-    if (ControlProviders[adapterId] != undefined) {
-        
-        replaceValue = ControlProviders[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
-    
-    } else if (Adapters[adapterId] != undefined) {
-        
-        replaceValue = Adapters[adapterId].replaceFieldValue(fieldId, responseDataset, sourceControl, thisDataset);
+    if (ControlProviders[adapter] != undefined) replaceValue = ControlProviders[adapter].replaceFieldValue(field, responseDataset, sourceControl, thisDataset);
+    else if (Adapters[adapter] != undefined) replaceValue = Adapters[adapter].replaceFieldValue(field, responseDataset, sourceControl, thisDataset);
 
-    }
-    
-    return value.replace('{[' + fieldName + ']}', replaceValue);
+    return value.replace('{[' + name + ']}', replaceValue);
 }
 
+function triggerAdapterUpdate() {
 
-function getAdapterDataSet(convertDataSet) {
+    /* triggerAdapterUpdate()______________________________________________
+    Manually triggers control update (i.e. after button was pressed)      */
 
-    /* getAdapterDataSet()_________________________________________________
+    clearTimeout(refreshAdapterThread);
+    setTimeout(function () { refreshStates(true); }, 1000);
+
+}
+
+function toAdapterDataSet(convertDataSet) {
+
+    /* toAdapterDataSet()__________________________________________________
     Returns dataset with id and value property                            */
 
     var returnObject = {};
     convertDataSet.forEach(item => returnObject[item.id] = item.val);
 
     return returnObject;
+}
+
+/* =========================================================
+    CONTROLS
+   ========================================================= */
+function refreshControl(control, adapter) {
+
+    /* refreshControl()________________________________________________________
+    Refreshes control using assigned adapter                                  */
+
+    var binding = getBindingInfo(control.getAttribute('cc-binding'));
+    
+    /*var bindingId = control.getAttribute('cc-binding');
+    var bindValue = getBindingValue(bindingId, control);*/
+
+    var bindingId = binding.fullId;
+    var bindValue = getBindingValue(bindingId, control);
+
+    if (bindValue != undefined) {
+
+        if (control.hasAttribute('cc-type')) {
+
+            var typeAttr = control.getAttribute('cc-type').toLowerCase();
+            var decimals = control.getAttribute('cc-decimals');
+
+            var prefix = (control.hasAttribute('cc-prefix') ? control.getAttribute('cc-prefix') : '');
+            var suffix = (control.hasAttribute('cc-suffix') ? control.getAttribute('cc-suffix') : '');
+            var offset = control.getAttribute('cc-offset');
+
+            switch (typeAttr) {
+
+                case 'numeric':
+
+                    bindValue = parseFloat((parseFloat(bindValue) + (offset != null ? parseFloat(offset) : 0))).toFixed((decimals != null ? parseFloat(decimals) : 0));
+                    if (NUMBER_FORMAT == 'EU') bindValue = replaceComma(bindValue);
+
+                case 'html':
+                case 'text':
+                case 'src':
+
+                    if (typeAttr == 'src') control.src = prefix + bindValue + suffix;
+                    else control.innerHTML = prefix + bindValue + suffix;
+                    break;
+
+                case 'date':
+                case 'time':
+                case 'shorttime':
+
+                    bindValue = bindValue.substring(0, (typeAttr == 'shorttime' ? 5 : 8));
+                    control.innerHTML = prefix + bindValue + suffix;
+                    break;
+
+                case 'button':
+                case 'switch':
+                case 'select':
+                case 'scene':
+
+                    var controlProvider = (control.hasAttribute('cc-control-provider') ? control.getAttribute('cc-control-provider') : DEFAULT_CONTROL);
+                    if (ControlProviders[controlProvider] != undefined) ControlProviders[controlProvider].updateActiveState(control, adapter.checkActiveState(bindValue, typeAttr));
+                    break;
+
+                case 'list':
+
+                    var controlProvider = (control.hasAttribute('cc-control-provider') ? control.getAttribute('cc-control-provider') : DEFAULT_LIST_CONTROL);
+                    if (ControlProviders[controlProvider] != undefined) ControlProviders[controlProvider].parseList(control, bindValue);
+                    break;
+
+            }
+        }
+    }
+}
+
+function applyCondition(control, conditionObject, data) {
+
+    /* applyCondition()___________________________________________________
+    Applys conditions to control (i.e. visibility)                       */
+
+    if (data != null && data != {}) conditionObject.forEach(function (condition) {
+
+        var binding = condition.binding;
+        var bindingValue = (data[binding] != null ? data[binding] : null);
+
+        // EVALUATE CONDITION
+        if (bindingValue != undefined && bindingValue != null) {
+            if (bindingValue == condition.value) {
+                if (condition.style != undefined) {
+                    for (var key in condition.style) {
+                        if (control.style.hasOwnProperty(key)) control.style[key] = condition.style[key];
+                    }
+                }
+            }
+        }
+    });
 }
 
 /* =========================================================

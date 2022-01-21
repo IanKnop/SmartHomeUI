@@ -23,6 +23,8 @@ function List() {
 
         var returnValue = '<table class="list-table">';
         
+        var hiddenColumns = (control.hasAttribute('cc-hidden-columns') ? control.getAttribute('cc-hidden-columns') : '').split(',');
+
         var styles = { 
             table: control.getAttribute('cc-table-style'), 
             row: control.getAttribute('cc-row-style'), 
@@ -36,42 +38,9 @@ function List() {
            
             content.forEach(row => {
 
-                if (typeof row === 'string') {
-                    
-                    // SIMPLE STRING DATA
-                    returnValue += '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '"><td class="list-td" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + '">' + row + '</td></tr>';
-
-                } 
-                else if (Array.isArray(row)) {
-
-                    // LIST WITHOUT HEADERS (= STRING ARRAY)
-                    returnValue += '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '">'; row.forEach(function(col) { 
-                        
-                        returnValue += '<td class="list-td" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + control.id + '\')>' + col + '</td>';
-
-                    }); returnValue += '</tr>';
-
-                } else if (typeof row === 'object') {
-
-                    // LIST WITH HEADERS (= OBJECT ARRAY)
-                    
-                    if (isFirstRow) {
-                        
-                        returnValue += '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '">'; 
-                        Object.keys(row).forEach(function(col) { returnValue += '<th class="list-th" style="' + (styles != null && styles.header != undefined ? styles.header : '') + '">' + col + '</th>' });
-                        returnValue += '</tr>';
-                    }
-
-                    returnValue += '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '">'; 
-                    Object.keys(row).forEach(function(col) { 
-                    
-                        returnValue += '<td class="list-td" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + control.id + '\')">' + row[col] + '</td>' 
-                    
-                    }); 
-                    returnValue += '</tr>';
-                }
-
+                returnValue += this.parseRow(control, row, styles, isFirstRow, hiddenColumns);
                 isFirstRow = false;
+
             });
 
         }
@@ -79,12 +48,51 @@ function List() {
         control.innerHTML = returnValue + '</table>';
     }
 
+    List.prototype.parseRow = function (control, content, styles = null, isHeader = false, hiddenColumns = []) {
+
+        /* parseRow()_________________________________________________________
+        Parses row of list based on given data                               */
+
+        if (typeof content === 'string') content = [ content ];
+        
+        var cells = '';
+        if (Array.isArray(content)) {
+            
+            // ARRAY
+            var index = 0;
+            content.forEach(function(col) { cells += '<t' + (isHeader ? 'h' : 'd') + ' class="list-t' + (isHeader ? 'h' : 'd') + '" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + (hiddenColumns.includes(index.toString()) ? ' display: none; ': '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + control.id + '\')>' + col + '</t' + (isHeader ? 'h' : 'd') + ' >'; index++ }); 
+
+        } else {
+
+            // OBJECT
+            var index = 0;
+            Object.keys(content).forEach(function(col) { 
+                
+                cells += ControlProviders.list.parseCell(col, index, control, content, styles, isHeader, hiddenColumns); 
+                index++; 
+            
+            }); 
+
+        }
+
+        var nextRow = (isHeader ? ControlProviders.list.parseRow(control, content, styles, false, hiddenColumns) : '');
+        return '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '">' + cells + '</tr>' + nextRow;
+    }
+
+    List.prototype.parseCell = function (col, index, control, content, styles, isHeader, hiddenColumns) {
+      
+        /* parseCell()_________________________________________________________
+        Parses standard or header cell based on given data                    */ 
+      
+        return '<t' + (isHeader ? 'h' : 'd') + ' class="list-t' + (isHeader ? 'h' : 'd') + '" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + (hiddenColumns.includes(index.toString()) ? ' display: none;': '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + control.id + '\')">' + (isHeader ? col : content[col]) + '</t' + (isHeader ? 'h' : 'd') + '>';
+    }
+
     List.prototype.replaceFieldValue = function (fieldId, responseDataset = null, sourceControl = null,  thisDataset = Dataset) {
 
         /* replaceFieldValue()___________________________________________________
         Replaces list specific value for given field names in (payload)-object  */
         
-        if (isNaN(fieldId)) fieldId = this.getFieldId(sourceControl, fieldId);
+        if (isNaN(fieldId)) fieldId = ControlProviders.list.getFieldId(sourceControl, fieldId);
         return sourceControl.firstChild.rows[responseDataset.row].cells[fieldId].innerText;
     }
 
@@ -109,7 +117,7 @@ function List() {
         /* setValue()____________________________________________________________
         Sets value in list requested by adapter                                 */
 
-        var index = (value == null ? 0 : this.getListNextIndex(payload, value));
+        var index = (value == null ? 0 : ControlProviders.list.getListNextIndex(payload, value));
         if (payload.valueKeys != undefined) target.control.setAttribute('cc-value-key', (payload.valueKeys != undefined ? payload.valueKeys[index] : payload.value[index]));
         
         return (payload.valueKeys != undefined ? payload.valueKeys[index] : payload.values[index]);
@@ -151,7 +159,6 @@ function List() {
 
         });                
     }
-
 }
 
 

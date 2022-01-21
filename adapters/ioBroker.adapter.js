@@ -133,7 +133,7 @@ iobroker.prototype.updateDataset = function(updateTimestamp) {
         thisAdapter.dataset = requestAnswer;
         thisAdapter.lastUpdate = updateTimestamp;
 
-        updateDataset(thisAdapter.getAdapterDataSet(thisAdapter.dataset));
+        updateDataset(thisAdapter.toAdapterDataSet(thisAdapter.dataset));
         
         AdapterControls.forEach(control => {
 
@@ -221,9 +221,9 @@ iobroker.prototype.setDatapoint = function (deviceId, value = 'true', nextFuncti
 /* =========================================================
    TOOLS 
    ========================================================= */
-iobroker.prototype.getAdapterDataSet = function (convertDataSet) {
+iobroker.prototype.toAdapterDataSet = function (convertDataSet) {
 
-    /* getAdapterDataSet()_________________________________________________
+    /* toAdapterDataSet()_________________________________________________
     Returns dataset with id and value property                            */
 
     var returnObject = {};

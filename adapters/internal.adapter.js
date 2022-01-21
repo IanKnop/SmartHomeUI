@@ -62,7 +62,7 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
     for (var index = 0; index < payload.target.length; index++) {
 
         var mode = payload.mode != undefined ? payload.mode : 'set';
-        var target = this.getBindingInfo(payload.target[index], senderControl);
+        var target = getBindingInfo(payload.target[index], senderControl);
 
         var value = this.getCurrentValue(target);
         var setValue = this.parseSetValue(payload.value != undefined ? replaceFieldValue(Array.isArray(payload.value) ? payload.value[index] : payload.value, responseData, senderControl, this.Dataset) : null, target);
@@ -132,40 +132,60 @@ internalAdapter.prototype.setValue = function (target, value, senderControl = nu
     /* setValue()_____________________________________________________________
     Refreshes dataset and control state with given value                     */
 
-    if (target.control == null || this.checkMinMax(target.control, value)) {
-
-        if (target.mode == 'value') {
-            
-            this.dataset[target.id] = value;
-
-        } else if (target.mode == 'key') {
-
-            this.dataset[target.id + '.key'] = value;
-            this.dataset[target.id] = JSON.parse(target.control.getAttribute('cc-values'))[JSON.parse(target.control.getAttribute('cc-value-keys')).indexOf(value)];
-
-        } else {
-
-            if (this.dataset[target.id] == undefined) this.dataset[target.id] = [];
-
-            if (target.mode == 'range') for (index = target.from; index <= target.to; index++) this.dataset[target.id][index] = value;
-            else this.dataset[target.id] = value;
-        }
-    }
-
-    // UPDATE GLOBAL DATASET
+    this.valueToDataset(target, value);
     updateDataset(this.dataset);
 
     if (target.control != undefined) this.refreshState(target.control, Date.now());
-    else if (target.arrayIndex != -1) {
+    else if (['array', 'range', 'bool', 'reverse-bool'].includes(target.mode)) {
 
         // TARGET IS ARRAY AND MIGHT AFFECT MULTIPLE CONTROLS
         AdapterControls.filter(control => { return control.binding.startsWith(target.id + '[') }).forEach(arrayControl => {
 
             this.refreshState(arrayControl, Date.now())
+        });
+    }
+}
+
+internalAdapter.prototype.valueToDataset = function (target, value) {
+
+    /* valueToDataset()_______________________________________________________
+    Writes new value to dataset according to target definition               */
+
+    if (target.control == null || this.checkMinMax(target.control, value)) {
+
+        if (target.mode == 'value') {
+            
+            // SINGLE VALUES
+            this.dataset[target.id] = value;
+
+        } else if (target.mode == 'key') {
+
+            // KEY VALUES
+            this.dataset[target.id + '.key'] = value;
+            this.dataset[target.id] = JSON.parse(target.control.getAttribute('cc-values'))[JSON.parse(target.control.getAttribute('cc-value-keys')).indexOf(value)];
+
+        } else {
+
+            // ARRAYS 
+            if (this.dataset[target.id] == undefined) this.dataset[target.id] = [];
+
+            if (target.mode == 'range') {
+                
+                // RANGES
+                for (index = target.from; index <= target.to; index++) this.dataset[target.id][index] = value;
+            
+            } else if (Array.isArray(value)) {
+                
+                // COMPLETE ARRAYS
+                this.dataset[target.id] = value;
+
+            } else {
+                
+                // SINGLE ARRAY VALUE
+                this.dataset[target.id][target.arrayIndex] = value;
+
+            }
         }
-
-        );
-
     }
 }
 
@@ -187,7 +207,7 @@ internalAdapter.prototype.refreshState = function (control, updateTimestamp = nu
 
         } else {
 
-            var binding = this.getBindingInfo(adapterControl.binding);
+            var binding = getBindingInfo(adapterControl.binding);
             this.initDataset(binding, control);
 
             var value = ((binding.mode == 'value' || binding.mode == 'key') ? this.dataset[binding.id] : this.dataset[binding.id][binding.arrayIndex]);
@@ -210,61 +230,30 @@ internalAdapter.prototype.initDataset = function (binding, control) {
     /* initDataset()_______________________________________________________
     Initializes dataset for given binding                                 */
 
-    if (this.dataset[binding.id] == undefined && (binding.mode == 'value' || binding.mode == 'key') ) {
+    switch (binding.mode) {
 
-        this.dataset[binding.id] = control.getAttribute('cc-value') != null ? control.getAttribute('cc-value') : '';
+        case 'value':
+        case 'key':
+            
+            if (this.dataset[binding.id] == undefined) this.dataset[binding.id] = control.getAttribute('cc-value') != null ? control.getAttribute('cc-value') : '';
+            break;
 
-    }
-    else if (this.dataset[binding.id] == undefined && binding.arrayIndex > -1) {
+        case 'array':
+        case 'bool':
+        case 'reverse-bool':
 
-        this.dataset[binding.id] = [];
-        if (control.getAttribute('cc-value') != null) this.dataset[binding.id][binding.arrayIndex] = control.getAttribute('cc-value');
-    }
-}
+            if (this.dataset[binding.id] == undefined) this.dataset[binding.id] = [];
+            if (this.dataset[binding.id][binding.arrayIndex] == undefined) {
 
-internalAdapter.prototype.getBindingInfo = function (tagetDef, senderControl = null) {
+                this.dataset[binding.id][binding.arrayIndex] = (binding.mode == 'bool' ? false : (binding.mode == 'reverse-bool' ? true : control.getAttribute('cc-value')));
 
-    /* getBindingInfo()_____________________________________________________
-    Gets target information values as object                               */
-
-    var returnObject = {};
-
-    if (tagetDef.includes('[')) {
-
-        // BINDING IS TARGETING AN ARRAY
-        returnObject.id = tagetDef.substring(0, tagetDef.indexOf('['));
-        returnObject.arrayIndex = tagetDef.substring(tagetDef.indexOf('[') + 1, tagetDef.indexOf(']'));
-
-        if (!isNaN(returnObject.arrayIndex)) {
-
-            // STANDARD ARRAY
-            returnObject.mode = 'array';
-
-        } else if (returnObject.arrayIndex.startsWith('?') || returnObject.arrayIndex.startsWith('!')) {
-
-            // BOOL OR REVERSE-BOOL ARRAY METHOD
-            returnObject.mode = returnObject.arrayIndex.startsWith('?') ? 'bool' : 'reverse-bool';
-            returnObject.arrayIndex = returnObject.arrayIndex.substring(1);
-
-        } else if (returnObject.arrayIndex.includes('-')) {
-
-            // ARRAY RANGE METHOD
-            returnObject.mode = 'range';
-            returnObject.from = returnObject.arrayIndex.substring(0, returnObject.arrayIndex.indexOf('-'));
-            returnObject.to = returnObject.arrayIndex.substring(returnObject.arrayIndex.indexOf('-') + 1);
-        }
-
-        returnObject.control = null;
-
-    } else {
-
-        // SINGLE VALUE OR KEY 
-        returnObject.id = tagetDef;
-        returnObject.control = document.getElementById(returnObject.id) != undefined ? document.getElementById(returnObject.id) : senderControl;
-        returnObject.mode = (returnObject.control != null && returnObject.control.hasAttribute('cc-value-key')) ? 'key' : 'value';
+            }
+            break;
     }
 
-    return returnObject;
+    // UPDATE GLOBAL DATASET
+    updateDataset(this.dataset);
+
 }
 
 internalAdapter.prototype.getCurrentValue = function (target) {
@@ -284,6 +273,8 @@ internalAdapter.prototype.getCurrentValue = function (target) {
             return this.dataset[target.id][target.from];
             
         case 'array':
+        case 'bool':
+        case 'reverse-bool':
             return this.dataset[target.id] != undefined && this.dataset[target.id][target.arrayIndex] != undefined ? this.dataset[target.id][target.arrayIndex] : '';
 
         default:
@@ -296,9 +287,8 @@ internalAdapter.prototype.parseSetValue = function (setValue, target) {
     /* parseSetValue()______________________________________________________
     Parses set value which can be single or array value                    */
 
-    var returnValue = setValue;
-
-    if (['array', 'bool', 'reverse-bool'].includes(target.mode) && setValue.includes(target.arrayIndex)) {
+    if (setValue == null) return null;
+    else if (['array', 'bool', 'reverse-bool'].includes(target.mode) && setValue.includes(target.arrayIndex)) {
     
         var returnValue = [];
         switch (target.mode) {
@@ -312,9 +302,10 @@ internalAdapter.prototype.parseSetValue = function (setValue, target) {
                 if (!isNaN(target.arrayIndex)) returnValue = setValue.split(target.arrayIndex);
                 break;
         }
-    }
 
-    return returnValue;
+        return returnValue;
+
+    } else return setValue;
 }
 
 internalAdapter.prototype.checkMinMax = function (control, value) {

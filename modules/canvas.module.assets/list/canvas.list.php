@@ -37,6 +37,8 @@
                     "style-row"         => Util::getStdStylesByScope($Source->style, 'row', false),
                     "style-cell"        => Util::getStdStylesByScope($Source->style, 'cell', false),
                     "style-header"      => Util::getStdStylesByScope($Source->style, 'header', false),
+                    
+                    "hidden-columns"    => isset($Source->hiddenColumns) ? 'cc-hidden-columns="' . (is_string($Source->hiddenColumns) ? $Source->hiddenColumns : implode(',', $Source->hiddenColumns)) . '"' : '',
 
                     "binding"           => @Util::val($Source->binding, (isset($Source->bindingProvider) && $Source->bindingProvider == 'internal' ? '#' : '')),
                     "binding-provider"  => @Util::val($Source->bindingProvider, 'cc-provider="internal"', 'cc-provider="', '" '),
