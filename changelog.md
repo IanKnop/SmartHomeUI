@@ -8,6 +8,11 @@ www.knop.family
 Change Log
 ========================================================= 
 
+V0.2.4 - Further Improvements in Lists ans Form Controls
+
+   - Added several features for working with variables esp. reading and writing data
+   - Included option to hide columns of list control
+
 V0.2.3 - Lists, Actions and Responses
 
    - Added further functionalities to action/handle mechanism allowing easy interactions with various adapters

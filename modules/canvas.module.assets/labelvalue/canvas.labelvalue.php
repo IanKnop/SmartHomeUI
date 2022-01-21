@@ -44,7 +44,7 @@ class LabelValue extends Control implements ICanvasControl {
             "suffix"        => @Util::val($Source->suffix, '', 'cc-suffix="', '"'),
             "prefix"        => @Util::val($Source->prefix, '', 'cc-prefix="', '"'),
             "decimals"      => @Util::val($Source->decimals, '', 'cc-decimals="', '"'),
-            "value"         => htmlentities($SourceValue),
+            "value"         => @Util::val(htmlentities($SourceValue), '', 'cc-value="', '"'),
             "formatvalue"   => $SourceValue . (isset($Source->suffix) ? $Source->suffix : '')));
     }
 }

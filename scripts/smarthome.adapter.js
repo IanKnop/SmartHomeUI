@@ -37,13 +37,13 @@ this.addEventListener("load", function () {
 
     document.body.querySelectorAll('[cc-update="true"],[cc-conditions]').forEach(element => {
 
-        // CONTROLS WITH BINDINGS
+        // CONTROLS WITH DIRECT BINDINGS
         if (element.getAttribute('cc-binding') != null && element.getAttribute('cc-binding').trim() != '') {
 
             var provider = getDataProvider(element);
 
             AdapterControls.push({ id: element.id, binding: element.getAttribute('cc-binding'), provider: provider, dataprovider: element.getAttribute('cc-dataprovider'), value: element.getAttribute('cc-value'), control: element });
-            AdapterBindings.push({ binding: element.getAttribute('cc-binding'), provider: provider });
+            AdapterBindings.push({ binding: element.getAttribute('cc-binding'), provider: provider, hasControl: true, controlId: element.id });
         }
 
         // CONTROLS WITH CONDITION BINDINGS
@@ -116,8 +116,8 @@ function handleResponse(adapter, responseMode, response, payload = null, refresh
         // STANDARD ADAPTER DATA POINTS
         if (force || (updateIteration == -1 || updateIteration == DATA_REFRESH_FREQUENCY)) {
 
-            // PROVIDER BASED ADAPTERS (i.e. ioBroker, Node-RED)
-            AdapterControls.forEach(function (control) {
+            // REFRESH DATA OF ADAPTER BINDINGS AND ANY RELATED CONTROLS (i.e. ioBroker, Node-RED)
+            AdapterBindings.forEach(function (control) {
 
                 if (control.provider == undefined || control.provider == null || control.provider == 'null' || control.provider == '') control.provider = DEFAULT_ADAPTER;
                 Adapters[control.provider].refreshState(control, Date.now());
@@ -127,11 +127,10 @@ function handleResponse(adapter, responseMode, response, payload = null, refresh
             // CONDITIONAL CONTROL BEHAVIOUR
             AdapterConditionControls.forEach(function (control) {
 
-                var conditionControl = document.getElementById(control.id);
-
-                // CHECK CONDITIONS
-                if (conditionControl.hasAttribute('cc-conditions') && conditionControl.getAttribute('cc-conditions').trim() != '')
-                    applyCondition(conditionControl, JSON.parse(urlDecode(conditionControl.getAttribute('cc-conditions'))), Dataset);
+                // CHECK AND APPLY CONDITIONS
+                var control = document.getElementById(control.id);
+                if (control.hasAttribute('cc-conditions')) applyCondition(control, JSON.parse(urlDecode(control.getAttribute('cc-conditions'))));
+                
             });
 
             updateIteration = 0;
@@ -431,7 +430,16 @@ function refreshControl(control, adapter) {
     }
 }
 
-function applyCondition(control, conditionObject, data) {
+function refreshAdapterControls(adapter) {
+
+    /* refreshAdapterControls()______________________________________________
+    Refreshes all controls bound to given adapter                           */
+
+    AdapterControls.forEach(control => { if (control.provider == adapter.adapterName) refreshControl(document.getElementById(control.id), adapter); });
+
+}
+
+function applyCondition(control, conditionObject, data = Dataset) {
 
     /* applyCondition()___________________________________________________
     Applys conditions to control (i.e. visibility)                       */
@@ -499,7 +507,7 @@ function getConditionBindings(conditions) {
     var returnArray = [];
     conditions.forEach(function (condition) {
 
-        var binding = { binding: condition.binding, provider: (condition.provider != undefined ? condition.provider : DEFAULT_ADAPTER) };
+        var binding = { binding: condition.binding, provider: (condition.provider != undefined ? condition.provider : DEFAULT_ADAPTER), hasControl: false, controlId: null };
 
         if (returnArray.filter(item => { return item.binding === condition.binding }).length == 0)
             returnArray.push(binding);

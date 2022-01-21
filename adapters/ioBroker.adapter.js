@@ -91,8 +91,6 @@ iobroker.prototype.refreshState = function (control, updateTimestamp) {
     /* refreshState()______________________________________________________
     Provider bound refresh for ioBroker API                               */
 
-    var currentControl = document.getElementById(control.id);
-
     // INITIALIZE BINDINGS AND DATAPOINTS LIST
     this.retrieveBindings();
 
@@ -102,10 +100,10 @@ iobroker.prototype.refreshState = function (control, updateTimestamp) {
         // UPDATE DATA AND REFRESH CONTROLS
         this.updateDataset(updateTimestamp);
 
-    } else if (this.dataset != null && !this.retrievingData) {
+    } else if (control.hasControl && this.dataset != null && !this.retrievingData) {
 
         // REFRESH CONTROLS WITHOUT DATA UPDATE
-        refreshControl(currentControl, this);
+        refreshControl(document.getElementById(control.controlId), this);
     }
 }
 
@@ -133,14 +131,9 @@ iobroker.prototype.updateDataset = function(updateTimestamp) {
         thisAdapter.dataset = requestAnswer;
         thisAdapter.lastUpdate = updateTimestamp;
 
+        // UPDATE GLOBAL DATASET
         updateDataset(thisAdapter.toAdapterDataSet(thisAdapter.dataset));
-        
-        AdapterControls.forEach(control => {
-
-            if (control.provider == thisAdapter.adapterName) 
-                refreshControl(document.getElementById(control.id), thisAdapter); 
-
-        });
+        refreshAdapterControls(thisAdapter);
 
         thisAdapter.retrievingData = false;
 

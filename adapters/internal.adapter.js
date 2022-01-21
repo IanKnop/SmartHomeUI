@@ -194,31 +194,30 @@ internalAdapter.prototype.refreshState = function (control, updateTimestamp = nu
     /* refreshState()______________________________________________________
     Provider bound refresh for internal adapter                           */
 
-    var adapterControl = this.getAdapterControl(control.id)[0];
-    var control = document.getElementById(control.id);
+    var adapterControl = this.getAdapterControl((control.controlId != undefined ? control.controlId : control.id));
 
     if (adapterControl.binding != undefined && adapterControl.binding.trim() != '#') {
 
         if (adapterControl.binding.startsWith('{[') && adapterControl.binding.endsWith(']}')) {
 
             // RETURN INTERNAL EXPRESSION (i.e. current time)
-            var value = this.parseExpression(getFieldName(control.getAttribute('cc-binding')));
-            control.innerHTML = value;
+            var value = this.parseExpression(getFieldName(adapterControl.control.getAttribute('cc-binding')));
+            adapterControl.control.innerHTML = value;
 
         } else {
 
             var binding = getBindingInfo(adapterControl.binding);
-            this.initDataset(binding, control);
+            this.initDataset(binding, adapterControl.control);
 
             var value = ((binding.mode == 'value' || binding.mode == 'key') ? this.dataset[binding.id] : this.dataset[binding.id][binding.arrayIndex]);
 
             // ADD ADDITIONAL KEY IF 'cc-value-key' IS SET
-            if (control.hasAttribute('cc-value-key') && this.dataset[adapterControl.id + '.key'] == undefined)
-                this.dataset[adapterControl.id + '.key'] = control.getAttribute('cc-value-key');
+            if (adapterControl.control.hasAttribute('cc-value-key') && this.dataset[adapterControl.id + '.key'] == undefined)
+                this.dataset[adapterControl.id + '.key'] = adapterControl.control.getAttribute('cc-value-key');
         }
 
-        control.setAttribute('cc-value', value);
-        refreshControl(control, this);
+        adapterControl.control.setAttribute('cc-value', value);
+        refreshControl(adapterControl.control, this);
     }
 }
 
@@ -335,7 +334,7 @@ internalAdapter.prototype.getAdapterControl = function (id) {
     /* getAdapterControl()__________________________________________________
     Gets cached adapter control based on id                                */
 
-    return AdapterControls.filter(control => { return control.id == id });
+    return AdapterControls.filter(control => { return control.id == id })[0] || null;
 
 }
 
