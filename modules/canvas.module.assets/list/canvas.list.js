@@ -16,20 +16,20 @@ this.addEventListener("load", function () {
 // ADAPTER BASE FUNCTION
 function List() {
 
-    List.prototype.parseList = function (control, content) {
+    List.prototype.parseList = function (controlInfo, content) {
 
         /* parseList()________________________________________________________
         Parses list based on array                                           */
 
         var returnValue = '<table class="list-table">';
         
-        var hiddenColumns = (control.control.hasAttribute('cc-hidden-columns') ? control.control.getAttribute('cc-hidden-columns') : '').split(',');
+        var hiddenColumns = (controlInfo.control.hasAttribute('cc-hidden-columns') ? controlInfo.control.getAttribute('cc-hidden-columns') : '').split(',');
 
         var styles = { 
-            table: control.control.getAttribute('cc-table-style'), 
-            row: control.control.getAttribute('cc-row-style'), 
-            header: control.control.getAttribute('cc-header-style'), 
-            cell: control.control.getAttribute('cc-cell-style') 
+            table: controlInfo.control.getAttribute('cc-table-style'), 
+            row: controlInfo.control.getAttribute('cc-row-style'), 
+            header: controlInfo.control.getAttribute('cc-header-style'), 
+            cell: controlInfo.control.getAttribute('cc-cell-style') 
         };
 
         if (Array.isArray(content)) {
@@ -38,17 +38,17 @@ function List() {
            
             content.forEach(row => {
 
-                returnValue += this.parseRow(control, row, styles, isFirstRow, hiddenColumns);
+                returnValue += this.parseRow(controlInfo, row, styles, isFirstRow, hiddenColumns);
                 isFirstRow = false;
 
             });
 
         }
         
-        control.control.innerHTML = returnValue + '</table>';
+        controlInfo.control.innerHTML = returnValue + '</table>';
     }
 
-    List.prototype.parseRow = function (control, content, styles = null, isHeader = false, hiddenColumns = []) {
+    List.prototype.parseRow = function (controlInfo, content, styles = null, isHeader = false, hiddenColumns = []) {
 
         /* parseRow()_________________________________________________________
         Parses row of list based on given data                               */
@@ -60,7 +60,7 @@ function List() {
             
             // ARRAY
             var index = 0;
-            content.forEach(function(col) { cells += '<t' + (isHeader ? 'h' : 'd') + ' class="list-t' + (isHeader ? 'h' : 'd') + '" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + (hiddenColumns.includes(index.toString()) ? ' display: none; ': '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + control.controlId + '\')>' + col + '</t' + (isHeader ? 'h' : 'd') + ' >'; index++ }); 
+            content.forEach(function(col) { cells += '<t' + (isHeader ? 'h' : 'd') + ' class="list-t' + (isHeader ? 'h' : 'd') + '" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + (hiddenColumns.includes(index.toString()) ? ' display: none; ': '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + controlInfo.id + '\')>' + col + '</t' + (isHeader ? 'h' : 'd') + ' >'; index++ }); 
 
         } else {
 
@@ -68,23 +68,23 @@ function List() {
             var index = 0;
             Object.keys(content).forEach(function(col) { 
                 
-                cells += ControlProviders.list.parseCell(col, index, control, content, styles, isHeader, hiddenColumns); 
+                cells += ControlProviders.list.parseCell(col, index, controlInfo, content, styles, isHeader, hiddenColumns); 
                 index++; 
             
             }); 
 
         }
 
-        var nextRow = (isHeader ? ControlProviders.list.parseRow(control, content, styles, false, hiddenColumns) : '');
+        var nextRow = (isHeader ? ControlProviders.list.parseRow(controlInfo, content, styles, false, hiddenColumns) : '');
         return '<tr class="list-tr" style="' + (styles != null && styles.row != undefined ? styles.row : '') + '">' + cells + '</tr>' + nextRow;
     }
 
-    List.prototype.parseCell = function (col, index, control, content, styles, isHeader, hiddenColumns) {
+    List.prototype.parseCell = function (col, index, controlInfo, content, styles, isHeader, hiddenColumns) {
       
         /* parseCell()_________________________________________________________
         Parses standard or header cell based on given data                    */ 
       
-        return '<t' + (isHeader ? 'h' : 'd') + ' class="list-t' + (isHeader ? 'h' : 'd') + '" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + (hiddenColumns.includes(index.toString()) ? ' display: none;': '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + control.controlId + '\')">' + (isHeader ? col : content[col]) + '</t' + (isHeader ? 'h' : 'd') + '>';
+        return '<t' + (isHeader ? 'h' : 'd') + ' class="list-t' + (isHeader ? 'h' : 'd') + '" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + (hiddenColumns.includes(index.toString()) ? ' display: none;': '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + controlInfo.id + '\')">' + (isHeader ? col : content[col]) + '</t' + (isHeader ? 'h' : 'd') + '>';
     }
 
     List.prototype.replaceFieldValue = function (fieldId, responseDataset = null, sourceControl = null,  thisDataset = Dataset) {

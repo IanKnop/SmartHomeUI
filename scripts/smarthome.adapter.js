@@ -14,7 +14,7 @@
 const REFRESH_FREQUENCY = 100;  // 100 = 10 times per second
 const DATA_REFRESH_FREQUENCY = 50;   // 50  = every 5 seconds trigger API call
 
-const DEFAULT_ADAPTER = 'iobroker';
+const DEFAULT_ADAPTER = 'internal';
 const NUMBER_FORMAT = 'EU';
 
 // GLOBAL PROPERTIES
@@ -203,6 +203,7 @@ function getBindingInfo(binding) {
     } else if (binding.includes('[')) {
 
         // BINDING IS TARGETING AN ARRAY
+        returnObject.isArray = true;
         setBindingArrayInfo(returnObject, binding);
 
     } else {
@@ -229,6 +230,7 @@ function getBindingObject(binding) {
         hasControl: false, 
         controls:   document.body.querySelectorAll('[cc-binding="' + binding + '"]'),
         arrayIndex: null, 
+        isArray:    false,
         mode:       'value'
     }
 
@@ -247,9 +249,7 @@ function setBindingArrayInfo(returnObject, binding) {
     /* setBindingArrayInfo()__________________________________________________
     Sets array specific binding information                                  */
 
-    returnObject.id = binding.substring(0, binding.indexOf('['));
-    returnObject.fullId = returnObject.id + '[' + returnObject.arrayIndex + ']';
-    
+    returnObject.binding = binding.substring(0, binding.indexOf('['));
     returnObject.arrayIndex = binding.substring(binding.indexOf('[') + 1, binding.indexOf(']'));
         
     if (!isNaN(returnObject.arrayIndex)) {
@@ -272,19 +272,23 @@ function setBindingArrayInfo(returnObject, binding) {
         returnObject.from = returnObject.arrayIndex.substring(0, returnObject.arrayIndex.indexOf('-'));
         returnObject.to = returnObject.arrayIndex.substring(returnObject.arrayIndex.indexOf('-') + 1);
     }
+
+    returnObject.arrayId = returnObject.binding + '[' + returnObject.arrayIndex + ']';
+    
 }
 
-function getBindingValue(bindingId, control = null, thisDataset = Dataset) {
+function getBindingValue(bindingInfo, thisDataset = Dataset) {
 
     /* getBindingValue()______________________________________________________
     Returns binding value based on given binding id and dataset              */
 
     var bindValue = null;
+    var bindingId = (bindingInfo.isArray ? bindingInfo.arrayId : bindingInfo.binding);
 
     if (bindingId == null || bindingId == '' || bindingId == '#') {
 
         // RETURN VALUE FROM "cc-value"-ATTRIBUTE INSTEAD OF DATASET
-        var bindValue = (control != null ? control.getAttribute('cc-value') : null);
+        var bindValue = (bindingInfo.hasControl ? bindingInfo.control.getAttribute('cc-value') : null);
 
     }
     else if (bindingId.startsWith('{[')) {
@@ -303,7 +307,7 @@ function getBindingValue(bindingId, control = null, thisDataset = Dataset) {
 
     } else {
 
-        // RETURN FULL ARRAY
+        // RETURN COMPLETE OBJECT
         var bindValue = thisDataset[bindingId];
 
     }
@@ -432,7 +436,7 @@ function refreshControl(controlInfo, adapter) {
     /* refreshControl()________________________________________________________
     Refreshes control using assigned adapter                                  */
 
-    var bindValue = getBindingValue(controlInfo.binding, controlInfo.control);
+    var bindValue = getBindingValue(controlInfo);
     if (bindValue != undefined) {
 
         if (controlInfo.control.hasAttribute('cc-type')) {
@@ -577,7 +581,7 @@ function getConditionBindings(conditions) {
     var returnArray = [];
     conditions.forEach(function (condition) {
 
-        var binding = { binding: condition.binding, provider: (condition.provider != undefined ? condition.provider : DEFAULT_ADAPTER), hasControl: false, controlId: null, control: null };
+        var binding = { binding: condition.binding, provider: (condition.bindingProvider != undefined ? condition.bindingProvider : DEFAULT_ADAPTER), hasControl: false, controlId: null, control: null };
 
         if (returnArray.filter(item => { return item.binding === condition.binding }).length == 0)
             returnArray.push(binding);

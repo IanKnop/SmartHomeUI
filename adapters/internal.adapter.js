@@ -139,10 +139,16 @@ internalAdapter.prototype.setValue = function (bindingInfo, value, senderControl
     else if (['array', 'range', 'bool', 'reverse-bool'].includes(bindingInfo.mode)) {
 
         // TARGET IS ARRAY AND MIGHT AFFECT MULTIPLE CONTROLS
-        AdapterControls.filter(control => { return control.binding.startsWith(bindingInfo.binding + '[') }).forEach(arrayControl => {
+        AdapterBindings.filter(arrayBinding => { return arrayBinding.binding == bindingInfo.binding }).forEach(arrayControl => {
 
             this.refreshState(arrayControl, Date.now())
         });
+        
+        
+        /*AdapterControls.filter(control => { return control.binding.startsWith(bindingInfo.binding + '[') }).forEach(arrayControl => {
+
+            this.refreshState(arrayControl, Date.now())
+        });*/
     }
 }
 
