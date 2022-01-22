@@ -12,6 +12,8 @@ V0.2.4 - Further Improvements in Lists ans Form Controls
 
    - Added several features for working with variables esp. reading and writing data
    - Included option to hide columns of list control
+   - Removed global "AdapterControls" object in favour of remaining AdapterBindings object with more information.
+   - Improved reliability of async data loading
 
 V0.2.3 - Lists, Actions and Responses
 
@@ -27,7 +29,7 @@ V0.2.2 - Interactive Canvas Controls
 
 V0.2.1 - Added README and LICENSE
 
-V0.2.0 - Initial Beta Release
+V0.2.0 - Initial Release
 
    - File structure optimizations for better maintenance
    - Adapter modifications
