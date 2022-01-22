@@ -52,7 +52,6 @@ iobroker.prototype.sendRequest = function (requestMode, payload, refreshControl 
 
             this.setDatapoint(payload.deviceId, payload.value, function(requestAnswer, thisAdapter) {
 
-                //if (refreshControl != null) ControlProviders[controlProvider].updateActiveState(refreshControl, this.checkActiveState(requestAnswer));
                 triggerAdapterUpdate();
                 if (nextFunction != null) nextFunction(requestAnswer, thisAdapter);
 
@@ -103,7 +102,8 @@ iobroker.prototype.refreshState = function (control, updateTimestamp) {
     } else if (control.hasControl && this.dataset != null && !this.retrievingData) {
 
         // REFRESH CONTROLS WITHOUT DATA UPDATE
-        refreshControl(document.getElementById(control.controlId), this);
+        //refreshControl(document.getElementById(control.controlId), this);
+        refreshControl(control, this);
     }
 }
 

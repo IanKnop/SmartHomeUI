@@ -39,6 +39,7 @@ class LabelValue extends Control implements ICanvasControl {
             "valuewidth"    => (isset($Source->valueWidth) ? $Source->valueWidth : '50%'),
             "update"        => (isset($Source->binding) && $Source->binding != '' ? 'true': 'false'),
             "binding"       => @Util::val($Source->binding, '', 'cc-binding="', '"'),
+            "provider"      => @Util::val($Source->bindingProvider, '', 'cc-provider="', '"'),
             "title"         => (isset($Source->title) ? $Source->title : ''),
             "raw-value"     => $SourceValue,
             "suffix"        => @Util::val($Source->suffix, '', 'cc-suffix="', '"'),

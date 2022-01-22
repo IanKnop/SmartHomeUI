@@ -61,11 +61,11 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
     // ITERATE VALUE CHANGE REQUESTS
     for (var index = 0; index < payload.target.length; index++) {
 
+        var bindingInfo = getBindingInfo(payload.target[index], senderControl);
         var mode = payload.mode != undefined ? payload.mode : 'set';
-        var target = getBindingInfo(payload.target[index], senderControl);
 
-        var value = this.getCurrentValue(target);
-        var setValue = this.parseSetValue(payload.value != undefined ? replaceFieldValue(Array.isArray(payload.value) ? payload.value[index] : payload.value, responseData, senderControl, this.Dataset) : null, target);
+        var value = this.getCurrentValue(bindingInfo);
+        var setValue = this.parseSetValue(payload.value != undefined ? replaceFieldValue(Array.isArray(payload.value) ? payload.value[index] : payload.value, responseData, senderControl, this.Dataset) : null, bindingInfo);
 
         switch (mode) {
 
@@ -100,7 +100,7 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
                     default:
 
                         var additor = setValue * (payload.mode == 'substract' || payload.mode == 'minus' ? -1 : 1);
-                        var newValue = parseFloat(target.control.getAttribute('cc-value')) + parseFloat(additor);
+                        var newValue = parseFloat(bindingInfo.control.getAttribute('cc-value')) + parseFloat(additor);
                         break;
                 }
                 break;
@@ -108,143 +108,142 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
             case 'multi': case 'multiply':
 
                 // MATH: MULTIPLICATION
-                var newValue = parseFloat(target.control.getAttribute('cc-value')) * parseFloat(setValue); break;
+                var newValue = parseFloat(bindingInfo.control.getAttribute('cc-value')) * parseFloat(setValue); break;
 
             case 'div': case 'divide':
 
                 // MATH: DIVISION
-                var newValue = parseFloat(target.control.getAttribute('cc-value')) / parseFloat(setValue).toPrecision(5); break;
+                var newValue = parseFloat(bindingInfo.control.getAttribute('cc-value')) / parseFloat(setValue).toPrecision(5); break;
 
             default:
 
-                if (ControlProviders[mode] != undefined) var newValue = ControlProviders[mode].setValue(payload, target, value);
-                else var newValue = parseFloat(target.control.getAttribute('cc-value'));
+                if (ControlProviders[mode] != undefined) var newValue = ControlProviders[mode].setValue(payload, bindingInfo, value);
+                else var newValue = parseFloat(bindingInfo.control.getAttribute('cc-value'));
 
         }
 
         // SET NEW VALUE AND UPDATE CONTROLS
-        this.setValue(target, newValue, senderControl);
+        this.setValue(bindingInfo, newValue, senderControl);
     }
 }
 
-internalAdapter.prototype.setValue = function (target, value, senderControl = null) {
+internalAdapter.prototype.setValue = function (bindingInfo, value, senderControl = null) {
 
     /* setValue()_____________________________________________________________
     Refreshes dataset and control state with given value                     */
 
-    this.valueToDataset(target, value);
+    this.valueToDataset(bindingInfo, value);
     updateDataset(this.dataset);
 
-    if (target.control != undefined) this.refreshState(target.control, Date.now());
-    else if (['array', 'range', 'bool', 'reverse-bool'].includes(target.mode)) {
+    if (bindingInfo.control != null) this.refreshState(bindingInfo, Date.now());
+    else if (['array', 'range', 'bool', 'reverse-bool'].includes(bindingInfo.mode)) {
 
         // TARGET IS ARRAY AND MIGHT AFFECT MULTIPLE CONTROLS
-        AdapterControls.filter(control => { return control.binding.startsWith(target.id + '[') }).forEach(arrayControl => {
+        AdapterControls.filter(control => { return control.binding.startsWith(bindingInfo.binding + '[') }).forEach(arrayControl => {
 
             this.refreshState(arrayControl, Date.now())
         });
     }
 }
 
-internalAdapter.prototype.valueToDataset = function (target, value) {
+internalAdapter.prototype.valueToDataset = function (bindingInfo, value) {
 
     /* valueToDataset()_______________________________________________________
     Writes new value to dataset according to target definition               */
 
-    if (target.control == null || this.checkMinMax(target.control, value)) {
+    if (bindingInfo.control == null || this.checkMinMax(bindingInfo.control, value)) {
 
-        if (target.mode == 'value') {
+        if (bindingInfo.mode == 'value') {
             
             // SINGLE VALUES
-            this.dataset[target.id] = value;
+            this.dataset[bindingInfo.binding] = value;
 
-        } else if (target.mode == 'key') {
+        } else if (bindingInfo.mode == 'key') {
 
             // KEY VALUES
-            this.dataset[target.id + '.key'] = value;
-            this.dataset[target.id] = JSON.parse(target.control.getAttribute('cc-values'))[JSON.parse(target.control.getAttribute('cc-value-keys')).indexOf(value)];
+            this.dataset[bindingInfo.binding + '.key'] = value;
+            this.dataset[bindingInfo.binding] = JSON.parse(bindingInfo.control.getAttribute('cc-values'))[JSON.parse(bindingInfo.control.getAttribute('cc-value-keys')).indexOf(value)];
 
         } else {
 
             // ARRAYS 
-            if (this.dataset[target.id] == undefined) this.dataset[target.id] = [];
+            if (this.dataset[bindingInfo.binding] == undefined) this.dataset[bindingInfo.binding] = [];
 
-            if (target.mode == 'range') {
+            if (bindingInfo.mode == 'range') {
                 
                 // RANGES
-                for (index = target.from; index <= target.to; index++) this.dataset[target.id][index] = value;
+                for (index = bindingInfo.from; index <= bindingInfo.to; index++) this.dataset[bindingInfo.binding][index] = value;
             
             } else if (Array.isArray(value)) {
                 
                 // COMPLETE ARRAYS
-                this.dataset[target.id] = value;
+                this.dataset[bindingInfo.binding] = value;
 
             } else {
                 
                 // SINGLE ARRAY VALUE
-                this.dataset[target.id][target.arrayIndex] = value;
+                this.dataset[bindingInfo.binding][bindingInfo.arrayIndex] = value;
 
             }
         }
     }
 }
 
-internalAdapter.prototype.refreshState = function (control, updateTimestamp = null) {
+internalAdapter.prototype.refreshState = function (bindingInfo, updateTimestamp = null) {
 
     /* refreshState()______________________________________________________
     Provider bound refresh for internal adapter                           */
 
-    var adapterControl = this.getAdapterControl((control.controlId != undefined ? control.controlId : control.id));
+    if (bindingInfo.binding.startsWith('{[') && bindingInfo.binding.endsWith(']}')) {
 
-    if (adapterControl.binding != undefined && adapterControl.binding.trim() != '#') {
+        // RETURN INTERNAL EXPRESSION (i.e. current time)
+        var value = this.parseExpression(getFieldName(bindingInfo.binding));
+        this.dataset[bindingInfo.binding] = value;
 
-        if (adapterControl.binding.startsWith('{[') && adapterControl.binding.endsWith(']}')) {
+    } else {
 
-            // RETURN INTERNAL EXPRESSION (i.e. current time)
-            var value = this.parseExpression(getFieldName(adapterControl.control.getAttribute('cc-binding')));
-            adapterControl.control.innerHTML = value;
+        this.initDataset(bindingInfo);
 
-        } else {
+        var value = ((bindingInfo.mode == 'value' || bindingInfo.mode == 'key') ? this.dataset[bindingInfo.binding] : this.dataset[bindingInfo.binding][bindingInfo.arrayIndex]);
 
-            var binding = getBindingInfo(adapterControl.binding);
-            this.initDataset(binding, adapterControl.control);
+        // ADD ADDITIONAL KEY IF 'cc-value-key' IS SET
+        if (bindingInfo.hasControl && bindingInfo.control.hasAttribute('cc-value-key') && this.dataset[bindingInfo.binding + '.key'] == undefined)
+            this.dataset[bindingInfo.binding + '.key'] = bindingInfo.control.getAttribute('cc-value-key');
 
-            var value = ((binding.mode == 'value' || binding.mode == 'key') ? this.dataset[binding.id] : this.dataset[binding.id][binding.arrayIndex]);
+    }
 
-            // ADD ADDITIONAL KEY IF 'cc-value-key' IS SET
-            if (adapterControl.control.hasAttribute('cc-value-key') && this.dataset[adapterControl.id + '.key'] == undefined)
-                this.dataset[adapterControl.id + '.key'] = adapterControl.control.getAttribute('cc-value-key');
-        }
-
-        adapterControl.control.setAttribute('cc-value', value);
-        refreshControl(adapterControl.control, this);
+    if (bindingInfo.hasControl) {
+        
+        bindingInfo.control.setAttribute('cc-value', value);
+        refreshControl(bindingInfo, this);
     }
 }
 
 /* =========================================================
    TOOLS
    ========================================================= */
-internalAdapter.prototype.initDataset = function (binding, control) {
+internalAdapter.prototype.initDataset = function (bindingInfo, control) {
 
     /* initDataset()_______________________________________________________
     Initializes dataset for given binding                                 */
 
-    switch (binding.mode) {
+    var control = bindingInfo.control;
+    switch (bindingInfo.mode) {
 
         case 'value':
         case 'key':
             
-            if (this.dataset[binding.id] == undefined) this.dataset[binding.id] = control.getAttribute('cc-value') != null ? control.getAttribute('cc-value') : '';
+            if (this.dataset[bindingInfo.binding] == undefined && control != null) this.dataset[bindingInfo.binding] = control.getAttribute('cc-value') != null ? control.getAttribute('cc-value') : '';
             break;
 
         case 'array':
         case 'bool':
         case 'reverse-bool':
 
-            if (this.dataset[binding.id] == undefined) this.dataset[binding.id] = [];
-            if (this.dataset[binding.id][binding.arrayIndex] == undefined) {
+            if (this.dataset[bindingInfo.binding] == undefined) this.dataset[bindingInfo.binding] = [];
+            if (this.dataset[bindingInfo.binding][bindingInfo.arrayIndex] == undefined) {
 
-                this.dataset[binding.id][binding.arrayIndex] = (binding.mode == 'bool' ? false : (binding.mode == 'reverse-bool' ? true : control.getAttribute('cc-value')));
+                this.dataset[bindingInfo.binding][bindingInfo.arrayIndex] = (bindingInfo.mode == 'bool' ? false : (bindingInfo.mode == 'reverse-bool' ? true : control.getAttribute('cc-value')));
 
             }
             break;
@@ -255,50 +254,50 @@ internalAdapter.prototype.initDataset = function (binding, control) {
 
 }
 
-internalAdapter.prototype.getCurrentValue = function (target) {
+internalAdapter.prototype.getCurrentValue = function (bindingInfo) {
 
     /* getCurrentValue()____________________________________________________
     Gets current value based on dataset or control                         */
 
-    switch (target.mode) {
+    switch (bindingInfo.mode) {
 
         case 'value':
-            return this.dataset[target.id] != undefined ? this.dataset[target.id] : (target.control != undefined ? target.control.getAttribute('cc-value') : '');
+            return this.dataset[bindingInfo.binding] != undefined ? this.dataset[bindingInfo.binding] : (bindingInfo.control != undefined ? bindingInfo.control.getAttribute('cc-value') : '');
             
         case 'key':
-            return this.dataset[target.id + '.key'];
+            return this.dataset[bindingInfo.binding + '.key'];
             
         case 'range':
-            return this.dataset[target.id][target.from];
+            return this.dataset[bindingInfo.binding][bindingInfo.from];
             
         case 'array':
         case 'bool':
         case 'reverse-bool':
-            return this.dataset[target.id] != undefined && this.dataset[target.id][target.arrayIndex] != undefined ? this.dataset[target.id][target.arrayIndex] : '';
+            return this.dataset[bindingInfo.binding] != undefined && this.dataset[bindingInfo.binding][bindingInfo.arrayIndex] != undefined ? this.dataset[bindingInfo.binding][bindingInfo.arrayIndex] : '';
 
         default:
             return '';
     }
 }
 
-internalAdapter.prototype.parseSetValue = function (setValue, target) {
+internalAdapter.prototype.parseSetValue = function (setValue, bindingInfo) {
 
     /* parseSetValue()______________________________________________________
     Parses set value which can be single or array value                    */
 
     if (setValue == null) return null;
-    else if (['array', 'bool', 'reverse-bool'].includes(target.mode) && setValue.includes(target.arrayIndex)) {
+    else if (['array', 'bool', 'reverse-bool'].includes(bindingInfo.mode) && setValue.includes(bindingInfo.arrayIndex)) {
     
         var returnValue = [];
-        switch (target.mode) {
+        switch (bindingInfo.mode) {
 
             case 'bool':
             case 'reverse-bool':
-                setValue.split(target.arrayIndex).forEach(index => { returnValue[index] = (target.mode == 'bool'); });
+                setValue.split(bindingInfo.arrayIndex).forEach(index => { returnValue[index] = (bindingInfo.mode == 'bool'); });
                 break;
                 
             default:
-                if (!isNaN(target.arrayIndex)) returnValue = setValue.split(target.arrayIndex);
+                if (!isNaN(bindingInfo.arrayIndex)) returnValue = setValue.split(bindingInfo.arrayIndex);
                 break;
         }
 
@@ -334,7 +333,7 @@ internalAdapter.prototype.getAdapterControl = function (id) {
     /* getAdapterControl()__________________________________________________
     Gets cached adapter control based on id                                */
 
-    return AdapterControls.filter(control => { return control.id == id })[0] || null;
+    return AdapterControls.filter(control => { return control.id == id })[0];
 
 }
 
@@ -354,9 +353,11 @@ internalAdapter.prototype.parseExpression = function (subject) {
 
     switch (subject.toUpperCase()) {
 
+        case '{[CURRENT_DATE_LONG]}':
         case 'CURRENT_DATE_LONG':
             var thisMoment = new Date();
             return thisMoment.toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        case '{[CURRENT_TIME]}':
         case 'CURRENT_TIME':
             var thisMoment = new Date();
             return thisMoment.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });

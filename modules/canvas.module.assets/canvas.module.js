@@ -21,28 +21,27 @@ function Canvas() {
         /* updateActiveState()________________________________________________
         Changes style of given element to active or inactive                 */
 
-        var currentControl = document.getElementById(control.id);
-        if (currentControl.getAttribute('cc-type')) {
+        if (control.control != null && control.control.getAttribute('cc-type')) {
 
-            switch (currentControl.getAttribute('cc-type').toLowerCase()) {
+            switch (control.control.getAttribute('cc-type').toLowerCase()) {
 
                 case 'switch':
                 case 'select': 
 
-                    var inidicatorControl = currentControl.querySelectorAll('div.indicator')[0];
+                    var inidicatorControl = control.control.querySelectorAll('div.indicator')[0];
 
                     if (state) {
 
-                        currentControl.classList.add('switch-control-active' + (currentControl.hasAttribute('cc-color') ? '-' + currentControl.getAttribute('cc-color').toLowerCase() : ''));
-                        currentControl.setAttribute('cc-value', 'true');
+                        control.control.classList.add('switch-control-active' + (control.control.hasAttribute('cc-color') ? '-' + control.control.getAttribute('cc-color').toLowerCase() : ''));
+                        control.control.setAttribute('cc-value', 'true');
                         
                         /* Indicator visibility set to '' instead of 'visible' to avoid unwanted visibility in hidden windows */
                         inidicatorControl.style.visibility = '';
 
                     } else {
 
-                        currentControl.classList.remove('switch-control-active' + (currentControl.hasAttribute('cc-color') ? '-' + currentControl.getAttribute('cc-color').toLowerCase() : ''));
-                        currentControl.setAttribute('cc-value', 'false');
+                        control.control.classList.remove('switch-control-active' + (control.control.hasAttribute('cc-color') ? '-' + control.control.getAttribute('cc-color').toLowerCase() : ''));
+                        control.control.setAttribute('cc-value', 'false');
                         
                         inidicatorControl.style.visibility = 'hidden';
                         

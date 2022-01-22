@@ -40,11 +40,10 @@ this.addEventListener("load", function () {
         // CONTROLS WITH DIRECT BINDINGS
         if (element.getAttribute('cc-binding') != null && element.getAttribute('cc-binding').trim() != '') {
 
-            var provider = getDataProvider(element);
+            AdapterControls.push(getControlInfo(element));
+            AdapterBindings.push(getBindingInfo(element.getAttribute('cc-binding')));
 
-            AdapterControls.push({ id: element.id, binding: element.getAttribute('cc-binding'), provider: provider, dataprovider: element.getAttribute('cc-dataprovider'), value: element.getAttribute('cc-value'), control: element });
-            AdapterBindings.push({ binding: element.getAttribute('cc-binding'), provider: provider, hasControl: true, controlId: element.id });
-        }
+        }   
 
         // CONTROLS WITH CONDITION BINDINGS
         if (element.getAttribute('cc-conditions') != null && element.getAttribute('cc-conditions').trim != '') {
@@ -98,7 +97,6 @@ function handleResponse(adapter, responseMode, response, payload = null, refresh
     if (adapter == null || adapter == '') adapter = DEFAULT_ADAPTER;
 
     replaceFieldValues(payload, response, refreshControl);
-    //replaceFieldValues(response);
     Adapters[adapter].handleResponse(responseMode, response, payload, refreshControl);
 
 }
@@ -106,21 +104,22 @@ function handleResponse(adapter, responseMode, response, payload = null, refresh
 /* =========================================================
     ADAPTER DATA
    ========================================================= */
-   function refreshStates(force = false) {
+function refreshStates(force = false) {
 
     /* refreshStates()________________________________________________________
     Frequently refreshes states of elements based on interface values        */
 
-    if (AdapterControls != [] || AdapterConditionControls != []) {
+    if (AdapterBindings != [] || AdapterConditionControls != []) {
 
         // STANDARD ADAPTER DATA POINTS
         if (force || (updateIteration == -1 || updateIteration == DATA_REFRESH_FREQUENCY)) {
 
             // REFRESH DATA OF ADAPTER BINDINGS AND ANY RELATED CONTROLS (i.e. ioBroker, Node-RED)
-            AdapterBindings.forEach(function (control) {
+            var refreshTimestamp = Date.now();
+            AdapterBindings.forEach(function (bindingInfo) {
 
-                if (control.provider == undefined || control.provider == null || control.provider == 'null' || control.provider == '') control.provider = DEFAULT_ADAPTER;
-                Adapters[control.provider].refreshState(control, Date.now());
+                if (!hasProvider(bindingInfo)) bindingInfo.provider = DEFAULT_ADAPTER;
+                Adapters[bindingInfo.provider].refreshState(bindingInfo, refreshTimestamp);
 
             });
 
@@ -130,7 +129,7 @@ function handleResponse(adapter, responseMode, response, payload = null, refresh
                 // CHECK AND APPLY CONDITIONS
                 var control = document.getElementById(control.id);
                 if (control.hasAttribute('cc-conditions')) applyCondition(control, JSON.parse(urlDecode(control.getAttribute('cc-conditions'))));
-                
+
             });
 
             updateIteration = 0;
@@ -142,6 +141,15 @@ function handleResponse(adapter, responseMode, response, payload = null, refresh
     }
 
     refreshAdapterThread = setTimeout(refreshStates, REFRESH_FREQUENCY);
+}
+
+function hasProvider(bindingInfo) {
+
+    /* updateDataset()________________________________________________________
+    Returns if binding information includes provider                         */
+
+    return !(bindingInfo.provider == undefined || bindingInfo.provider == null || bindingInfo.provider == 'null' || bindingInfo.provider == '')
+
 }
 
 function updateDataset(refreshData, parentObject = '') {
@@ -164,59 +172,106 @@ function updateDataset(refreshData, parentObject = '') {
     }
 }
 
-function getBindingInfo(tagetDef, senderControl = null) {
+function getControlInfo(control) {
 
     /* getBindingInfo()_____________________________________________________
     Gets target information values as object                               */
 
-    var returnObject = {};
+    return { 
+        id:             control.id, 
+        binding:        control.getAttribute('cc-binding'), 
+        provider:       getDataProvider(control), 
+        dataprovider:   control.getAttribute('cc-dataprovider'), 
+        value:          control.getAttribute('cc-value'), 
+        control:        control 
+    }
 
-    if (tagetDef.startsWith('{[') || tagetDef.startsWith('{{[')) {
+}
 
-        // STANDARD EXPRESSIONS OR FIELDS 
-        returnObject.id = tagetDef;
-        returnObject.fullId = tagetDef;
-        returnObject.control = null;
-        returnObject.mode = tagetDef.startsWith('{{[') ? 'field' : 'expression';
+function getBindingInfo(binding) {
 
-    } else if (tagetDef.includes('[')) {
+    /* getBindingInfo()_____________________________________________________
+    Gets target information values as object                               */
+
+    var returnObject = getBindingObject(binding);
+    
+    if (binding.startsWith('{[') || binding.startsWith('{{[')) {
+        
+        // STANDARD EXPRESSIONS
+        returnObject.mode = binding.startsWith('{{[') ? 'field' : 'expression';
+
+    } else if (binding.includes('[')) {
 
         // BINDING IS TARGETING AN ARRAY
-        returnObject.id = tagetDef.substring(0, tagetDef.indexOf('['));
-        returnObject.arrayIndex = tagetDef.substring(tagetDef.indexOf('[') + 1, tagetDef.indexOf(']'));
-
-        if (!isNaN(returnObject.arrayIndex)) {
-
-            // STANDARD ARRAY
-            returnObject.mode = 'array';
-
-        } else if (returnObject.arrayIndex.startsWith('?') || returnObject.arrayIndex.startsWith('!')) {
-
-            // BOOL OR REVERSE-BOOL ARRAY METHOD
-            returnObject.mode = returnObject.arrayIndex.startsWith('?') ? 'bool' : 'reverse-bool';
-            returnObject.arrayIndex = returnObject.arrayIndex.substring(1);
-
-        } else if (returnObject.arrayIndex.includes('-')) {
-
-            // ARRAY RANGE METHOD
-            returnObject.mode = 'range';
-            returnObject.from = returnObject.arrayIndex.substring(0, returnObject.arrayIndex.indexOf('-'));
-            returnObject.to = returnObject.arrayIndex.substring(returnObject.arrayIndex.indexOf('-') + 1);
-        }
-
-        returnObject.fullId = returnObject.id + '[' + returnObject.arrayIndex + ']';
-        returnObject.control = null;
+        setBindingArrayInfo(returnObject, binding);
 
     } else {
 
         // SINGLE VALUE OR KEY 
-        returnObject.id = tagetDef;
-        returnObject.fullId = tagetDef;
-        returnObject.control = document.getElementById(returnObject.id) != undefined ? document.getElementById(returnObject.id) : null;
         returnObject.mode = (returnObject.control != null && returnObject.control.hasAttribute('cc-value-key')) ? 'key' : 'value';
     }
 
     return returnObject;
+}
+
+function getBindingObject(binding) {
+
+    /* getBindingObject()_____________________________________________________
+    Returns new binding info object                                          */
+
+    var control = document.getElementById(binding);
+    
+    var returnValue = { 
+        binding:    binding, 
+        provider:   (binding.includes('::') ? binding.split('::')[0] : DEFAULT_ADAPTER),
+        control:    null, 
+        controlId:  null, 
+        hasControl: false, 
+        controls:   document.body.querySelectorAll('[cc-binding="' + binding + '"]'),
+        arrayIndex: null, 
+        mode:       'value'
+    }
+
+    if (returnValue.controls.length > 0) {
+        returnValue.control = returnValue.controls[0];
+        returnValue.controlId = returnValue.controls[0].id;
+        returnValue.provider = getDataProvider(returnValue.control);
+        returnValue.hasControl = true;
+    }
+
+    return returnValue;
+}
+
+function setBindingArrayInfo(returnObject, binding) {
+
+    /* setBindingArrayInfo()__________________________________________________
+    Sets array specific binding information                                  */
+
+    returnObject.id = binding.substring(0, binding.indexOf('['));
+    returnObject.fullId = returnObject.id + '[' + returnObject.arrayIndex + ']';
+    
+    returnObject.arrayIndex = binding.substring(binding.indexOf('[') + 1, binding.indexOf(']'));
+        
+    if (!isNaN(returnObject.arrayIndex)) {
+
+        // STANDARD ARRAY
+        returnObject.mode = 'array';
+
+    } else if (returnObject.arrayIndex.startsWith('?') || returnObject.arrayIndex.startsWith('!')) {
+
+        // BOOL OR REVERSE-BOOL ARRAY METHOD
+        returnObject.mode = returnObject.arrayIndex.startsWith('?') ? 'bool' : 'reverse-bool';
+
+        returnObject.arrayIndex = returnObject.arrayIndex.substring(1);
+
+    } else if (returnObject.arrayIndex.includes('-')) {
+
+        // ARRAY RANGE METHOD
+        returnObject.mode = 'range';
+
+        returnObject.from = returnObject.arrayIndex.substring(0, returnObject.arrayIndex.indexOf('-'));
+        returnObject.to = returnObject.arrayIndex.substring(returnObject.arrayIndex.indexOf('-') + 1);
+    }
 }
 
 function getBindingValue(bindingId, control = null, thisDataset = Dataset) {
@@ -228,11 +283,19 @@ function getBindingValue(bindingId, control = null, thisDataset = Dataset) {
 
     if (bindingId == null || bindingId == '' || bindingId == '#') {
 
+        // RETURN VALUE FROM "cc-value"-ATTRIBUTE INSTEAD OF DATASET
         var bindValue = (control != null ? control.getAttribute('cc-value') : null);
+
+    }
+    else if (bindingId.startsWith('{[')) {
+
+        // RETURN STANDARD EXPRESSIONS ARE ALWAYAS COMPUTED LIVE
+        var bindValue = Adapters.internal.parseExpression(bindingId);
 
     }
     else if (bindingId.includes('[') && !bindingId.startsWith('{[')) {
 
+        // RETURN SINGLE ARRAY VALUE
         var arrayName = bindingId.substring(0, bindingId.indexOf('['));
         var arrayIndex = bindingId.substring(bindingId.indexOf('[') + 1, bindingId.indexOf(']'));
 
@@ -240,6 +303,7 @@ function getBindingValue(bindingId, control = null, thisDataset = Dataset) {
 
     } else {
 
+        // RETURN FULL ARRAY
         var bindValue = thisDataset[bindingId];
 
     }
@@ -286,33 +350,33 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
             var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
             var binding = getBindingInfo(fieldName);
 
-            if (binding.id.includes('::')) value = replaceAdapterFieldValue(value, responseDataset, sourceControl, thisDataset);
+            if (binding.binding.includes('::')) value = replaceAdapterFieldValue(value, responseDataset, sourceControl, thisDataset);
             else {
 
-                if (Dataset[binding.id] != undefined && typeof Dataset[binding.id] === 'string') {
+                if (Dataset[binding.binding] != undefined && typeof Dataset[binding.binding] === 'string') {
 
-                    value = value.replace('{[' + binding.id + ']}', Dataset[binding.id]);
+                    value = value.replace('{[' + binding.binding + ']}', Dataset[binding.binding]);
 
-                } else if (Dataset[binding.id] != undefined) {
+                } else if (Dataset[binding.binding] != undefined) {
 
                     if ((binding.mode == 'bool' || binding.mode == 'reverse-bool') && binding.arrayIndex == 'n') {
 
                         // TRANSFORM ARRAY OF BOOL IN LIST OF TRUE OR FALSE INDEXES
                         var computeValue = '';
-                        for (var index = 0; index <= Dataset[binding.id].length; index++)
-                            if (Dataset[binding.id][index] == (binding.mode == 'bool')) computeValue += index + ',';
+                        for (var index = 0; index <= Dataset[binding.binding].length; index++)
+                            if (Dataset[binding.binding][index] == (binding.mode == 'bool')) computeValue += index + ',';
                          
-                        value = value.replace('{[' + binding.id + '[' + (binding.mode == 'bool' ? '?' : '!') + 'n]' + ']}', computeValue.substring(0, Math.max(0, computeValue.length - 1)));
+                        value = value.replace('{[' + binding.binding + '[' + (binding.mode == 'bool' ? '?' : '!') + 'n]' + ']}', computeValue.substring(0, Math.max(0, computeValue.length - 1)));
                     
                     } else {
 
-                        value = value.replace('{[' + binding.id + ']}', JSON.stringify(Dataset[binding.id]));
+                        value = value.replace('{[' + binding.binding + ']}', JSON.stringify(Dataset[binding.binding]));
                     
                     }
 
                 } else {
 
-                    value = value.replace('{[' + binding.id + ']}', null);
+                    value = value.replace('{[' + binding.binding + ']}', null);
 
                 }
             }
@@ -363,29 +427,22 @@ function toAdapterDataSet(convertDataSet) {
 /* =========================================================
     CONTROLS
    ========================================================= */
-function refreshControl(control, adapter) {
+function refreshControl(controlInfo, adapter) {
 
     /* refreshControl()________________________________________________________
     Refreshes control using assigned adapter                                  */
 
-    var binding = getBindingInfo(control.getAttribute('cc-binding'));
-    
-    /*var bindingId = control.getAttribute('cc-binding');
-    var bindValue = getBindingValue(bindingId, control);*/
-
-    var bindingId = binding.fullId;
-    var bindValue = getBindingValue(bindingId, control);
-
+    var bindValue = getBindingValue(controlInfo.binding, controlInfo.control);
     if (bindValue != undefined) {
 
-        if (control.hasAttribute('cc-type')) {
+        if (controlInfo.control.hasAttribute('cc-type')) {
 
-            var typeAttr = control.getAttribute('cc-type').toLowerCase();
-            var decimals = control.getAttribute('cc-decimals');
+            var typeAttr = controlInfo.control.getAttribute('cc-type').toLowerCase();
+            var decimals = controlInfo.control.getAttribute('cc-decimals');
 
-            var prefix = (control.hasAttribute('cc-prefix') ? control.getAttribute('cc-prefix') : '');
-            var suffix = (control.hasAttribute('cc-suffix') ? control.getAttribute('cc-suffix') : '');
-            var offset = control.getAttribute('cc-offset');
+            var prefix = (controlInfo.control.hasAttribute('cc-prefix') ? controlInfo.control.getAttribute('cc-prefix') : '');
+            var suffix = (controlInfo.control.hasAttribute('cc-suffix') ? controlInfo.control.getAttribute('cc-suffix') : '');
+            var offset = controlInfo.control.getAttribute('cc-offset');
 
             switch (typeAttr) {
 
@@ -398,16 +455,16 @@ function refreshControl(control, adapter) {
                 case 'text':
                 case 'src':
 
-                    if (typeAttr == 'src') control.src = prefix + bindValue + suffix;
-                    else control.innerHTML = prefix + bindValue + suffix;
+                    if (typeAttr == 'src') controlInfo.control.src = prefix + bindValue + suffix;
+                    else controlInfo.control.innerHTML = prefix + bindValue + suffix;
                     break;
 
                 case 'date':
                 case 'time':
                 case 'shorttime':
 
-                    bindValue = bindValue.substring(0, (typeAttr == 'shorttime' ? 5 : 8));
-                    control.innerHTML = prefix + bindValue + suffix;
+                    bindValue = (typeAttr == 'date' ? bindValue : bindValue.substring(0, (typeAttr == 'shorttime' ? 5 : 8)));
+                    controlInfo.control.innerHTML = prefix + bindValue + suffix;
                     break;
 
                 case 'button':
@@ -415,14 +472,14 @@ function refreshControl(control, adapter) {
                 case 'select':
                 case 'scene':
 
-                    var controlProvider = (control.hasAttribute('cc-control-provider') ? control.getAttribute('cc-control-provider') : DEFAULT_CONTROL);
-                    if (ControlProviders[controlProvider] != undefined) ControlProviders[controlProvider].updateActiveState(control, adapter.checkActiveState(bindValue, typeAttr));
+                    var controlProvider = (controlInfo.control.hasAttribute('cc-control-provider') ? controlInfo.control.getAttribute('cc-control-provider') : DEFAULT_CONTROL);
+                    if (ControlProviders[controlProvider] != undefined) ControlProviders[controlProvider].updateActiveState(controlInfo, adapter.checkActiveState(bindValue, typeAttr));
                     break;
 
                 case 'list':
 
-                    var controlProvider = (control.hasAttribute('cc-control-provider') ? control.getAttribute('cc-control-provider') : DEFAULT_LIST_CONTROL);
-                    if (ControlProviders[controlProvider] != undefined) ControlProviders[controlProvider].parseList(control, bindValue);
+                    var controlProvider = (controlInfo.control.hasAttribute('cc-control-provider') ? controlInfo.control.getAttribute('cc-control-provider') : DEFAULT_LIST_CONTROL);
+                    if (ControlProviders[controlProvider] != undefined) ControlProviders[controlProvider].parseList(controlInfo, bindValue);
                     break;
 
             }
@@ -435,7 +492,7 @@ function refreshAdapterControls(adapter) {
     /* refreshAdapterControls()______________________________________________
     Refreshes all controls bound to given adapter                           */
 
-    AdapterControls.forEach(control => { if (control.provider == adapter.adapterName) refreshControl(document.getElementById(control.id), adapter); });
+    AdapterControls.forEach(controlInfo => { if (controlInfo.provider == adapter.adapterName && controlInfo.control != null) refreshControl(controlInfo, adapter); });
 
 }
 
@@ -451,7 +508,20 @@ function applyCondition(control, conditionObject, data = Dataset) {
 
         // EVALUATE CONDITION
         if (bindingValue != undefined && bindingValue != null) {
-            if (bindingValue == condition.value) {
+
+            var conditionsMet = true;
+            
+            // VALUE COMPARE
+            if (condition.value != undefined && bindingValue != condition.value) conditionsMet = false;
+
+            // EMPTY
+            if (condition.empty != undefined) {
+
+                if (!condition.empty && (bindingValue == null || (typeof bindingValue === 'string' ? bindingValue == '' : bindingValue.length == 0))) conditionsMet = false;
+                else if (condition.empty && !(bindingValue == null || (typeof bindingValue === 'string' ? bindingValue == '' : bindingValue.length == 0))) conditionsMet = false;
+            }
+
+            if (conditionsMet) {
                 if (condition.style != undefined) {
                     for (var key in condition.style) {
                         if (control.style.hasOwnProperty(key)) control.style[key] = condition.style[key];
@@ -507,7 +577,7 @@ function getConditionBindings(conditions) {
     var returnArray = [];
     conditions.forEach(function (condition) {
 
-        var binding = { binding: condition.binding, provider: (condition.provider != undefined ? condition.provider : DEFAULT_ADAPTER), hasControl: false, controlId: null };
+        var binding = { binding: condition.binding, provider: (condition.provider != undefined ? condition.provider : DEFAULT_ADAPTER), hasControl: false, controlId: null, control: null };
 
         if (returnArray.filter(item => { return item.binding === condition.binding }).length == 0)
             returnArray.push(binding);

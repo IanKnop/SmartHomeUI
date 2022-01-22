@@ -9,7 +9,6 @@
 
 class Util
 {
-
     public static function val($Input = null, $Alt = '', $Prefix = '', $Suffix = '', $AltPrefix = '', $AltSuffix = '')
     {
 
@@ -81,8 +80,8 @@ class Util
         /* parseExpressions()___________________________________________________
         Parses text with standard expressions (i.e. date, time)                */
 
-        $Subject = str_replace('{{[CURRENT_DATE_LONG]}}', '<div id="date_long_label_' . rand(1000000, 9999999) . '" cc-update="true" cc-provider="internal" cc-binding="{[CURRENT_DATE_LONG]}">' . self::getDay(date('N')) . ', ' . date('j') . '. ' . self::getMonth(date('m')) . ' ' . date('Y') . '</div>', $Subject);
-        $Subject = str_replace('{{[CURRENT_TIME]}}', '<div id="time_label_' . rand(1000000, 9999999) . '" cc-update="true" cc-provider="internal" cc-binding="{[CURRENT_TIME]}">'  . date('H') . ':' . date('i') . '</div>', $Subject);
+        $Subject = str_replace('{{[CURRENT_DATE_LONG]}}', '<div id="date_long_label_' . rand(1000000, 9999999) . '" cc-type="date" cc-update="true" cc-provider="internal" cc-binding="{[CURRENT_DATE_LONG]}">' . self::getDay(date('N')) . ', ' . date('j') . '. ' . self::getMonth(date('m')) . ' ' . date('Y') . '</div>', $Subject);
+        $Subject = str_replace('{{[CURRENT_TIME]}}', '<div id="time_label_' . rand(1000000, 9999999) . '" cc-type="shorttime" cc-update="true" cc-provider="internal" cc-binding="{[CURRENT_TIME]}">'  . date('H') . ':' . date('i') . '</div>', $Subject);
         return $Subject;
     }
 
