@@ -20,8 +20,7 @@ const NUMBER_FORMAT = 'EU';
 // GLOBAL PROPERTIES
 var Adapters = {};
 var AdapterBindings = [];
-var AdapterControls = [];
-var AdapterConditionControls = [];
+var ConditionalControls = [];
 var Dataset = {};
 
 var refreshAdapterThread = null;
@@ -37,21 +36,14 @@ this.addEventListener("load", function () {
 
     document.body.querySelectorAll('[cc-update="true"],[cc-conditions]').forEach(element => {
 
-        // CONTROLS WITH DIRECT BINDINGS
-        if (element.getAttribute('cc-binding') != null && element.getAttribute('cc-binding').trim() != '') {
-
-            AdapterControls.push(getControlInfo(element));
-            AdapterBindings.push(getBindingInfo(element.getAttribute('cc-binding')));
-
-        }   
+        // READ ALL CONTROL BINDINGS
+        if (element.getAttribute('cc-binding') != null && element.getAttribute('cc-binding').trim() != '') AdapterBindings.push(getBindingInfo(element.getAttribute('cc-binding')));
 
         // CONTROLS WITH CONDITION BINDINGS
         if (element.getAttribute('cc-conditions') != null && element.getAttribute('cc-conditions').trim != '') {
-
-            AdapterConditionControls.push({ id: element.id, conditions: element.getAttribute('cc-conditions'), style: element.style });
+            ConditionalControls.push({ id: element.id, conditions: element.getAttribute('cc-conditions'), style: element.style });
             getConditionBindings(element.getAttribute('cc-conditions')).forEach(binding => AdapterBindings.push(binding));
         }
-
     });
 
     // REFRESH STATE ONCE AND THEN AS {REFRESH_FREQUENCY} INTERVAL (in refreshStates() function)
@@ -109,7 +101,7 @@ function refreshStates(force = false) {
     /* refreshStates()________________________________________________________
     Frequently refreshes states of elements based on interface values        */
 
-    if (AdapterBindings != [] || AdapterConditionControls != []) {
+    if (AdapterBindings != [] || ConditionalControls != []) {
 
         // STANDARD ADAPTER DATA POINTS
         if (force || (updateIteration == -1 || updateIteration == DATA_REFRESH_FREQUENCY)) {
@@ -124,7 +116,7 @@ function refreshStates(force = false) {
             });
 
             // CONDITIONAL CONTROL BEHAVIOUR
-            AdapterConditionControls.forEach(function (control) {
+            ConditionalControls.forEach(function (control) {
 
                 // CHECK AND APPLY CONDITIONS
                 var control = document.getElementById(control.id);
@@ -496,7 +488,7 @@ function refreshAdapterControls(adapter) {
     /* refreshAdapterControls()______________________________________________
     Refreshes all controls bound to given adapter                           */
 
-    AdapterControls.forEach(controlInfo => { if (controlInfo.provider == adapter.adapterName && controlInfo.control != null) refreshControl(controlInfo, adapter); });
+    AdapterBindings.forEach(bindingInfo => { if (bindingInfo.provider == adapter.adapterName && bindingInfo.hasControl) refreshControl(bindingInfo, adapter); });
 
 }
 
@@ -581,7 +573,9 @@ function getConditionBindings(conditions) {
     var returnArray = [];
     conditions.forEach(function (condition) {
 
-        var binding = { binding: condition.binding, provider: (condition.bindingProvider != undefined ? condition.bindingProvider : DEFAULT_ADAPTER), hasControl: false, controlId: null, control: null };
+        //var binding = { binding: condition.binding, provider: (condition.bindingProvider != undefined ? condition.bindingProvider : DEFAULT_ADAPTER), hasControl: false, controlId: null, control: null };
+        var binding = getBindingInfo(condition.binding);    
+        binding.provider = (condition.bindingProvider != undefined ? condition.bindingProvider : DEFAULT_ADAPTER);
 
         if (returnArray.filter(item => { return item.binding === condition.binding }).length == 0)
             returnArray.push(binding);

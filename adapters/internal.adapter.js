@@ -143,12 +143,6 @@ internalAdapter.prototype.setValue = function (bindingInfo, value, senderControl
 
             this.refreshState(arrayControl, Date.now())
         });
-        
-        
-        /*AdapterControls.filter(control => { return control.binding.startsWith(bindingInfo.binding + '[') }).forEach(arrayControl => {
-
-            this.refreshState(arrayControl, Date.now())
-        });*/
     }
 }
 
@@ -332,15 +326,6 @@ internalAdapter.prototype.handleResponse = function (responseMode, response, pay
             if (payload.message != null) alert(payload.message);
             break;
     }
-}
-
-internalAdapter.prototype.getAdapterControl = function (id) {
-
-    /* getAdapterControl()__________________________________________________
-    Gets cached adapter control based on id                                */
-
-    return AdapterControls.filter(control => { return control.id == id })[0];
-
 }
 
 internalAdapter.prototype.checkActiveState = function (checkValue, type) {
