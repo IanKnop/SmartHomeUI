@@ -30,9 +30,12 @@ class ButtonGroup extends Control implements ICanvasControl
         return Views::parseTemplate('canvas', 'buttongroup/templates/buttongroup',
             array(
 
+                "id"                => @Util::val($Source->id, 'buttongroup-' . rand(1000000, 9999999)),
+
                 /* Set canvas element classes and styles */
                 "element-style"     => Util::getStdStyles($Source),
                 "element-class"     => isset($Source->class) ? Util::getValueByScope($Source->class, 'element') : '',
+                "conditions"        => isset($Source->conditions) ? 'cc-conditions="' . htmlentities(json_encode($Source->conditions)) .  '"' : '',
 
                 /* Parse button group control */
                 "header"            => $this->getHeader($Source),

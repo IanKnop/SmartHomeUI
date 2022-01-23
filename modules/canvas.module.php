@@ -21,9 +21,9 @@ class Canvas extends Module implements IModule {
         if (isset($this->Properties)) {
         
             $Properties = array(
-                "id"        => @Util::val($this->Id, rand(1000000, 9999999)), 
-                "style"     => @Util::val($this->VariantProperties->style),
-                "content"   => $this->getCanvasElements());
+                "id"            => @Util::val($this->Id, rand(1000000, 9999999)), 
+                "style"         => @Util::val($this->VariantProperties->style),
+                "content"       => $this->getCanvasElements());
             
             // IF IMAGE PRESENT "analyzeImage" RETURNS WIDTH AND HEIGHT
             if (ImageUtil::analyzeImage($this->VariantProperties, $ImageWidth, $ImageHeight)) {

@@ -30,6 +30,7 @@ class LabelValue extends Control implements ICanvasControl {
         
         return Views::parseTemplate('canvas', 'labelvalue/templates/labelvalue', array(
             "id"            => @Util::val($Source->id, 'label-' . rand(1000000, 9999999)),
+            
             "style"         => Util::getStdStyles($Source),
             "type"          => @Util::val($Source->valueType, 'text'),
             "labelstyle"    => (isset($Source->labelStyles) ? $Source->labelStyles : '') . (isset($Source->labelStyle) ? $Source->labelStyle : ''),
@@ -39,6 +40,7 @@ class LabelValue extends Control implements ICanvasControl {
             "valuewidth"    => (isset($Source->valueWidth) ? $Source->valueWidth : '50%'),
             "update"        => (isset($Source->binding) && $Source->binding != '' ? 'true': 'false'),
             "binding"       => @Util::val($Source->binding, '', 'cc-binding="', '"'),
+            "conditions"    => isset($Source->conditions) ? 'cc-conditions="' . htmlentities(json_encode($Source->conditions)) .  '"' : '',
             "provider"      => @Util::val($Source->bindingProvider, '', 'cc-provider="', '"'),
             "title"         => (isset($Source->title) ? $Source->title : ''),
             "raw-value"     => $SourceValue,

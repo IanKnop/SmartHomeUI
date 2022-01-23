@@ -501,27 +501,22 @@ function applyCondition(control, conditionObject, data = Dataset) {
 
         var binding = condition.binding;
         var bindingValue = (data[binding] != null ? data[binding] : null);
+        var conditionsMet = true;
 
-        // EVALUATE CONDITION
-        if (bindingValue != undefined && bindingValue != null) {
-
-            var conditionsMet = true;
+        // CHECK IF VALUE "undefined", "null" OR empty
+        if (condition.empty != undefined) {
             
-            // VALUE COMPARE
-            if (condition.value != undefined && bindingValue != condition.value) conditionsMet = false;
+            if (!condition.empty && (bindingValue == undefined || bindingValue == null || (typeof bindingValue === 'string' ? bindingValue == '' : bindingValue.length == 0))) conditionsMet = false;
+            else if (condition.empty && !(bindingValue == undefined || bindingValue == null || (typeof bindingValue === 'string' ? bindingValue == '' : bindingValue.length == 0))) conditionsMet = false;
+        }
 
-            // EMPTY
-            if (condition.empty != undefined) {
+        // CHECK VALUE
+        if (condition.value != undefined && bindingValue != condition.value) conditionsMet = false;
 
-                if (!condition.empty && (bindingValue == null || (typeof bindingValue === 'string' ? bindingValue == '' : bindingValue.length == 0))) conditionsMet = false;
-                else if (condition.empty && !(bindingValue == null || (typeof bindingValue === 'string' ? bindingValue == '' : bindingValue.length == 0))) conditionsMet = false;
-            }
-
-            if (conditionsMet) {
-                if (condition.style != undefined) {
-                    for (var key in condition.style) {
-                        if (control.style.hasOwnProperty(key)) control.style[key] = condition.style[key];
-                    }
+        if (conditionsMet) {
+            if (condition.style != undefined) {
+                for (var key in condition.style) {
+                    if (control.style.hasOwnProperty(key)) control.style[key] = condition.style[key];
                 }
             }
         }

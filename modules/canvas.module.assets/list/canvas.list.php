@@ -27,7 +27,7 @@
             return Views::parseTemplate('canvas', 'list/templates/list',
                 array(
     
-                    "id"            => @Util::val($Source->id, rand(1000000, 9999999)),
+                    "id"            => @Util::val($Source->id, 'list-' . rand(1000000, 9999999)),
 
                     /* Set canvas element classes and styles */
                     "element-style"     => Util::getStdStylesByScope($Source->style, 'element', true),
@@ -42,6 +42,7 @@
 
                     "binding"           => @Util::val($Source->binding, (isset($Source->bindingProvider) && $Source->bindingProvider == 'internal' ? '#' : '')),
                     "binding-provider"  => @Util::val($Source->bindingProvider, 'cc-provider="internal"', 'cc-provider="', '" '),
+                    "conditions"        => isset($Source->conditions) ? 'cc-conditions="' . htmlentities(json_encode($Source->conditions)) . '"' : '',
 
                     "action"            => @Util::val(htmlentities(json_encode($Source->action))), 
                     "update"            => @Util::val($Source->update, 'true')
