@@ -116,13 +116,7 @@ function refreshStates(force = false) {
             });
 
             // CONDITIONAL CONTROL BEHAVIOUR
-            ConditionalControls.forEach(function (control) {
-
-                // CHECK AND APPLY CONDITIONS
-                var control = document.getElementById(control.id);
-                if (control.hasAttribute('cc-conditions')) applyCondition(control, JSON.parse(urlDecode(control.getAttribute('cc-conditions'))));
-
-            });
+            refreshConditionControls();
 
             updateIteration = 0;
 
@@ -133,6 +127,20 @@ function refreshStates(force = false) {
     }
 
     refreshAdapterThread = setTimeout(refreshStates, REFRESH_FREQUENCY);
+}
+
+function refreshConditionControls() {
+
+    /* refreshConditionControls()_____________________________________________
+    Refreshes all conditional controls (i.e. dynamically visible)            */
+
+    ConditionalControls.forEach(function (control) {
+
+        // CHECK AND APPLY CONDITIONS
+        var control = document.getElementById(control.id);
+        if (control.hasAttribute('cc-conditions')) applyCondition(control, JSON.parse(urlDecode(control.getAttribute('cc-conditions'))));
+
+    });
 }
 
 function hasProvider(bindingInfo) {
@@ -479,6 +487,8 @@ function refreshControl(controlInfo, adapter) {
                     break;
 
             }
+
+            refreshConditionControls();
         }
     }
 }

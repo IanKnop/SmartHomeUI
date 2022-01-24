@@ -14,6 +14,7 @@ V0.2.4 - Further Improvements in Lists ans Form Controls
    - Included option to hide columns of list control
    - Removed global "AdapterControls" object in favour of remaining AdapterBindings object with more information.
    - Improved reliability of async data loading
+   - Conditional styles for button groups, lists and labels
 
 V0.2.3 - Lists, Actions and Responses
 
