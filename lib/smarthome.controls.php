@@ -42,7 +42,8 @@ class Control implements ICanvasControl {
                 $Payload = (isset($Response->payload) ? Base::replaceProperties(json_encode($Response->payload), $Control) : '{ }');
 
                 // GET CALL AND RESPONSE FUNCTION
-                $NextFunction = 'function(response, adapter, refreshControl) { var payload = {}; payload.request = ' . $Payload . '; payload.response = response; sendRequest(\'' . $Adapter . '\', \'' . $Method . '\', payload, refreshControl); }';                
+                $NextFunction = 'function(response, adapter, refreshControl) { 
+                    var payload = {}; payload.request = ' . $Payload . '; payload.response = response; sendRequest(\'' . $Adapter . '\', \'' . $Method . '\', payload, refreshControl); }';                
             }
 
             $Event = 'sendRequest(\'' . @Util::val($Action->adapter, 'internal') . '\', \'' . @Util::val($Action->method, 'trigger') . '\', ' . (isset($Action->payload) ? htmlentities(Base::replaceProperties(json_encode($Action->payload), $Control)) : '{ }') . ', this, \'' . @Util::val($Action->sound) . '\', \'' . @Util::val($ControlProvider) . '\', ' . htmlentities($NextFunction) . ');';

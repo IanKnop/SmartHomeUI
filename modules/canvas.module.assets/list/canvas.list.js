@@ -83,8 +83,9 @@ function List() {
       
         /* parseCell()_________________________________________________________
         Parses standard or header cell based on given data                    */ 
-      
-        return '<t' + (isHeader ? 'h' : 'd') + ' class="list-t' + (isHeader ? 'h' : 'd') + '" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + (hiddenColumns.includes(index.toString()) ? ' display: none;': '') + '" onclick="ControlProviders.list.clickItem(\'' + col + '\', this, \'' + bindingInfo.controlId + '\')">' + (isHeader ? col : content[col]) + '</t' + (isHeader ? 'h' : 'd') + '>';
+        
+        var clickScript = (isHeader ? 'ControlProviders.list.clickHeader(\'' + col + '\', this, \')' : 'ControlProviders.list.clickItem(\'' + col + '\', this, \'' + bindingInfo.controlId + '\')');
+        return '<t' + (isHeader ? 'h' : 'd') + ' class="list-t' + (isHeader ? 'h' : 'd') + '" style="' + (styles != null && styles.cell != undefined ? styles.cell : '') + (hiddenColumns.includes(index.toString()) ? ' display: none;': '') + '" onclick="' + clickScript +'">' + (isHeader ? col : content[col]) + '</t' + (isHeader ? 'h' : 'd') + '>';
     }
 
     List.prototype.replaceFieldValue = function (fieldId, responseDataset = null, sourceControl = null,  thisDataset = Dataset) {

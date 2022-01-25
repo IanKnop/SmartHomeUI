@@ -65,7 +65,7 @@ function sendRequest(adapter, requestMode, payload, refreshControl = null, sound
     if (sound != '') SmartHomeUI.Audio.playSound(sound.toUpperCase());
 
     // REPLACE FIELD VALUES
-    replaceFieldValues(payload, null, refreshControl);
+    replaceFieldValues(payload, (payload.response != undefined ? payload.response : null), refreshControl);
     
     // CALL ADAPTER BASED REQUEST HANDLING
     Adapters[adapter].sendRequest(requestMode, payload, refreshControl, controlProvider, nextFunction);
@@ -344,8 +344,8 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
 
             var propertyId = value.substring(value.indexOf('{response.') + 10, value.indexOf('}', value.indexOf('{response.')));
 
-            if (responseDataset != null && responseDataset[propertyId] != undefined) value = value.replace('{response.' + propertyId + '}', responseDataset[propertyId]);
             lastPosition = value.indexOf('{response.') + 1;
+            if (responseDataset != null && responseDataset[propertyId] != undefined) value = value.replace('{response.' + propertyId + '}', responseDataset[propertyId]);         
         }
 
         // STANDARD FIELDS

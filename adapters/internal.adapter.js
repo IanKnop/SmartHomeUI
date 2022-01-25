@@ -30,22 +30,29 @@ internalAdapter.prototype.sendRequest = function (requestMode, payload, senderCo
     Gets internal adapter request                                          */
 
     var requestData = (payload.request != undefined ? payload.request : payload);
-
     var responseData = (payload.response != undefined ? payload.response : null);
-    if (responseData != null) payload = payload.request;
+    payload = (responseData != null ? payload.request : payload);
 
     switch (requestMode.toLowerCase()) {
 
         // VALUE: Modify value of control or variable
         case 'value':
 
-            this.setValues(payload, senderControl, responseData);
+            var requestPayload = this.setValues(payload, senderControl, responseData, nextFunction);
+            if (nextFunction != null) nextFunction(requestPayload, this, refreshControl);
+            
             break;
 
         // MSG: Simple message output mainly for debugging
         case 'msg':
 
             alert(payload.message);
+            break;
+
+        // SCRIPT: Run JavaScript using eval (possible security issues depending on usage)
+        case 'script':
+
+            var returnValue = eval(payload.script);
             break;
     }
 }
@@ -58,6 +65,9 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
     // TRANSFORM SINGLE VALUE TO ARRAY
     if (typeof payload.target === 'string') payload.target = [payload.target];
 
+    if (payload.target.length > 1) var returnValue = [];
+    else var returnValue = null;
+
     // ITERATE VALUE CHANGE REQUESTS
     for (var index = 0; index < payload.target.length; index++) {
 
@@ -65,7 +75,9 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
         var mode = payload.mode != undefined ? payload.mode : 'set';
 
         var value = this.getCurrentValue(bindingInfo);
-        var setValue = this.parseSetValue(payload.value != undefined ? replaceFieldValue(Array.isArray(payload.value) ? payload.value[index] : payload.value, responseData, senderControl, this.Dataset) : null, bindingInfo);
+        
+        if (payload.script != undefined) var setValue = eval(payload.script);
+        else var setValue = this.parseSetValue(payload.value != undefined ? replaceFieldValue(Array.isArray(payload.value) ? payload.value[index] : payload.value, responseData, senderControl, this.Dataset) : null, bindingInfo);
 
         switch (mode) {
 
@@ -123,8 +135,14 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
         }
 
         // SET NEW VALUE AND UPDATE CONTROLS
+        
         this.setValue(bindingInfo, newValue, senderControl);
+        
+        if (payload.target.length > 1) returnValue.push({ binding: bindingInfo.binding, mode: mode, oldValue: value, newValue: newValue });
+        else returnValue = { binding: bindingInfo.binding, mode: mode, oldValue: value, newValue: newValue };
     }
+
+    return returnValue;
 }
 
 internalAdapter.prototype.setValue = function (bindingInfo, value, senderControl = null) {
