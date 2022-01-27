@@ -8,6 +8,11 @@ www.knop.family
 Change Log
 ========================================================= 
 
+V0.2.5 - List Control Improvements
+
+   - Allow setting width, visibility and alternative title for list headers
+   - Use click on list item as action trigger
+
 V0.2.4 - Further Improvements in Lists ans Form Controls
 
    - Added several features for working with variables esp. reading and writing data
