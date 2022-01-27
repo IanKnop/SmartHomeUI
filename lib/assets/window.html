@@ -2,7 +2,7 @@
 <div id="window-container-{{[id]}}" class="window-container" style="visibility: collapse;">
     <div id="window-{{[id]}}" class="window" style="grid-template-columns: {{[columns]}}; grid-template-rows: {{[rows]}};"> 
         <module id="window-header-{{[id]}}" class="module border-module border-top border-right border-left rounded-top module-top" style="grid-area: 1 / 1 / 3 / 26; background: var(--window-header-gradient);">
-            <div class="view-title" style="font: 3.5vmin; line-height: 6vh;"><strong>HEADER</strong></div>
+            <div class="view-title" style="font: 3.5vmin; line-height: 6vh;"><strong>{{[header]}}</strong></div>
             <div class="view-title" style="font: 3.5vmin; line-height: 6vh; right: 20px; cursor: pointer;" onclick="SmartHomeUI.closeWindow('{{[id]}}');">
                 <img style="height: 3.5vh; margin-top: 1vh;" src="img/icons/cancel.svg"/>
             </div>

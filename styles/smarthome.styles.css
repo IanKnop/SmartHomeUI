@@ -97,6 +97,7 @@
         
     --window-header-gradient:   linear-gradient(to var(--direction), var(--mainB-dark-semi) 0%, var(--mainA-black-opaque) 100%);
     --window-module-gradient:   linear-gradient(to var(--direction), var(--mainA-black-opaque) 0%, var(--mainB-semi) 100%);
+    --window-module-gradient-opaque:   linear-gradient(to var(--direction), var(--mainA-black-opaque) 0%, var(--mainB-opaque) 100%);
     --window-module-gradient-r: linear-gradient(to var(--direction), var(--mainB-opaque) 0%, var(--mainA) 100%);
     
     --module-header-color:      var(--mainX-white-opaque);

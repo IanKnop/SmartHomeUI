@@ -29,11 +29,30 @@ list {
 
 .list-td {
 
+    padding: 0.25vmin;
+
     text-align: left;
     overflow: auto;
     text-overflow: ellipsis;
     white-space: nowrap;
 
+}
+
+.list-tr {
+
+    display: inline-block;
+    width: 100%; 
+
+    margin-bottom: 0.25vmin;
+    border-radius: 1vmin;
+    overflow: overlay;
+}
+
+.list-tr-highlighted {
+
+    font-weight: 900;
+    background: var(--alt-button-gradient-reverse);
+    color: var(--white);
 }
 
 .list-content {

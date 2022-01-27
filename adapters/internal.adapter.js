@@ -46,7 +46,7 @@ internalAdapter.prototype.sendRequest = function (requestMode, payload, senderCo
         // MSG: Simple message output mainly for debugging
         case 'msg':
 
-            alert(payload.message);
+            SmartHomeUI.MessageBox.show(payload.message, (payload.showClose != undefined ? payload.showClose : (payload.autoClose != undefined ? false : true)), (payload.autoClose != undefined ? payload.autoClose : -1));    
             break;
 
         // SCRIPT: Run JavaScript using eval (possible security issues depending on usage)
@@ -72,9 +72,9 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
     for (var index = 0; index < payload.target.length; index++) {
 
         var bindingInfo = getBindingInfo(payload.target[index], senderControl);
-        var mode = payload.mode != undefined ? payload.mode : 'set';
-
         var value = this.getCurrentValue(bindingInfo);
+
+        var mode = payload.mode != undefined ? payload.mode : 'set';
         
         if (payload.script != undefined) var setValue = eval(payload.script);
         else var setValue = this.parseSetValue(payload.value != undefined ? replaceFieldValue(Array.isArray(payload.value) ? payload.value[index] : payload.value, responseData, senderControl, this.Dataset) : null, bindingInfo);
@@ -157,9 +157,10 @@ internalAdapter.prototype.setValue = function (bindingInfo, value, senderControl
     else if (['array', 'range', 'bool', 'reverse-bool'].includes(bindingInfo.mode)) {
 
         // TARGET IS ARRAY AND MIGHT AFFECT MULTIPLE CONTROLS
-        AdapterBindings.filter(arrayBinding => { return arrayBinding.binding == bindingInfo.binding }).forEach(arrayControl => {
+        AdapterBindings.filter(arrayBinding => { return arrayBinding.binding == bindingInfo.binding }).forEach(arrayItemInfo => {
+            
+            this.refreshState(arrayItemInfo, Date.now());
 
-            this.refreshState(arrayControl, Date.now())
         });
     }
 }
@@ -221,7 +222,6 @@ internalAdapter.prototype.refreshState = function (bindingInfo, updateTimestamp 
     } else {
 
         this.initDataset(bindingInfo);
-
         var value = ((bindingInfo.mode == 'value' || bindingInfo.mode == 'key') ? this.dataset[bindingInfo.binding] : this.dataset[bindingInfo.binding][bindingInfo.arrayIndex]);
 
         // ADD ADDITIONAL KEY IF 'cc-value-key' IS SET
@@ -230,11 +230,8 @@ internalAdapter.prototype.refreshState = function (bindingInfo, updateTimestamp 
 
     }
 
-    if (bindingInfo.hasControl) {
-        
-        bindingInfo.control.setAttribute('cc-value', value);
-        refreshControl(bindingInfo, this);
-    }
+    updateDataset(this.dataset);
+    refreshControls(bindingInfo, this);
 }
 
 /* =========================================================

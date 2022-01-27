@@ -85,6 +85,7 @@ module-canvas {
     z-index: 185;
 
     border-left: var(--border-width) solid var(--border-color); 
+    border-top: var(--border-width) solid var(--border-color); 
     cursor: pointer;
     z-index: 150;
 }

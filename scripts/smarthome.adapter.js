@@ -129,6 +129,8 @@ function refreshStates(force = false) {
     refreshAdapterThread = setTimeout(refreshStates, REFRESH_FREQUENCY);
 }
 
+
+
 function refreshConditionControls() {
 
     /* refreshConditionControls()_____________________________________________
@@ -320,12 +322,17 @@ function replaceFieldValues(sourceObject, responseDataset = null, sourceControl 
     /* replaceFieldValues()___________________________________________________
     Replaces values for given field names in (payload)-object                */
 
-    Object.keys(sourceObject).forEach(key => {
+    if (typeof sourceObject === 'string') return replaceFieldValue(sourceObject, responseDataset, sourceControl, thisDataset);
+    else {
+        
+        Object.keys(sourceObject).forEach(key => {
 
-        if (typeof sourceObject[key] != 'string') replaceFieldValues(sourceObject[key], responseDataset, sourceControl, thisDataset);
-        else sourceObject[key] = replaceFieldValue(sourceObject[key], responseDataset, sourceControl, thisDataset)
-
-    });
+            if (typeof sourceObject[key] != 'string') replaceFieldValues(sourceObject[key], responseDataset, sourceControl, thisDataset);
+            else sourceObject[key] = replaceFieldValue(sourceObject[key], responseDataset, sourceControl, thisDataset);
+    
+        });
+    }
+    
 }
 
 function replaceFieldValue(value, responseDataset = null, sourceControl = null, thisDataset = Dataset) {
@@ -354,7 +361,11 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
             var fieldName = value.substring(value.indexOf('{[') + 2, value.indexOf(']}'));
             var binding = getBindingInfo(fieldName);
 
-            if (binding.binding.includes('::')) value = replaceAdapterFieldValue(value, responseDataset, sourceControl, thisDataset);
+            if (binding.binding.includes('::')) {
+                
+                value = replaceAdapterFieldValue(value, responseDataset, sourceControl, thisDataset);
+
+            }
             else {
 
                 if (Dataset[binding.binding] != undefined && typeof Dataset[binding.binding] === 'string') {
@@ -436,9 +447,12 @@ function refreshControl(controlInfo, adapter) {
     /* refreshControl()________________________________________________________
     Refreshes control using assigned adapter                                  */
 
-    var bindValue = getBindingValue(controlInfo);
+    var bindingInfo = getBindingInfo(controlInfo.binding);
+    var bindValue = getBindingValue(bindingInfo);
+    
     if (bindValue != undefined) {
 
+        controlInfo.control.setAttribute('cc-value', bindValue);
         if (controlInfo.control.hasAttribute('cc-type')) {
 
             var typeAttr = controlInfo.control.getAttribute('cc-type').toLowerCase();
@@ -493,12 +507,27 @@ function refreshControl(controlInfo, adapter) {
     }
 }
 
+function refreshControls(bindingInfo, adapter) {
+
+    /* refreshControls()_____________________________________________________
+    Refreshes all controls in bindingInfo controls collection               */
+
+    if (bindingInfo.controls != null) {
+        
+        bindingInfo.controls.forEach(control => {
+
+            controlInfo = getControlInfo(control);
+            refreshControl(controlInfo, adapter);
+        });
+    }
+}
+
 function refreshAdapterControls(adapter) {
 
     /* refreshAdapterControls()______________________________________________
     Refreshes all controls bound to given adapter                           */
 
-    AdapterBindings.forEach(bindingInfo => { if (bindingInfo.provider == adapter.adapterName && bindingInfo.hasControl) refreshControl(bindingInfo, adapter); });
+    AdapterBindings.forEach(bindingInfo => { if (bindingInfo.provider == adapter.adapterName && bindingInfo.hasControl) refreshControls(bindingInfo, adapter); });
 
 }
 

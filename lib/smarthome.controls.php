@@ -33,23 +33,13 @@ class Control implements ICanvasControl {
             $Action = $Control->action;
             $ControlProvider = isset($Control->controlProvider) ? $Control->controlProvider : 'canvas';
 
-            $NextFunction = '';
-            if (isset($Control->action->handle)) {
-
-                $Response = $Control->action->handle;
-                $Adapter = @Util::val($Response->adapter, 'internal');
-                $Method = @Util::val($Response->method, 'msg');
-                $Payload = (isset($Response->payload) ? Base::replaceProperties(json_encode($Response->payload), $Control) : '{ }');
-
-                // GET CALL AND RESPONSE FUNCTION
-                $NextFunction = 'function(response, adapter, refreshControl) { 
-                    var payload = {}; payload.request = ' . $Payload . '; payload.response = response; sendRequest(\'' . $Adapter . '\', \'' . $Method . '\', payload, refreshControl); }';                
-            }
-
+            if (isset($Action->handle)) $NextFunction = $this->getHandleTree($Action->handle, $Control, $ControlProvider);
+            else $NextFunction = null;
+            
             $Event = 'sendRequest(\'' . @Util::val($Action->adapter, 'internal') . '\', \'' . @Util::val($Action->method, 'trigger') . '\', ' . (isset($Action->payload) ? htmlentities(Base::replaceProperties(json_encode($Action->payload), $Control)) : '{ }') . ', this, \'' . @Util::val($Action->sound) . '\', \'' . @Util::val($ControlProvider) . '\', ' . htmlentities($NextFunction) . ');';
+            
             if ($CreateClickEvent) return Base::getClickEvent($Event);
             else return $Event;
-
 
         } else if (isset($Control->action)) {
 
@@ -60,6 +50,23 @@ class Control implements ICanvasControl {
 
             return '';
         }
+    }
+
+    public function getHandleTree($Handle, $Control, $ControlProvider) {
+
+        /* getHandleTree()___________________________________________________________
+        Returns parsed handle-functions following an initial action                 */
+
+        $Adapter = @Util::val($Handle->adapter, 'internal');
+        $Method = @Util::val($Handle->method, 'msg');
+        
+        $Payload = (isset($Handle->payload) ? Base::replaceProperties(json_encode($Handle->payload), $Control) : '{ }');
+        
+        if (isset($Handle->handle)) $NextFunction = $this->getHandleTree($Handle->handle, $Control, $ControlProvider);
+        else $NextFunction = 'null';
+
+        return 'function(response, adapter, refreshControl) { var payload = {}; payload.request = ' . $Payload . '; payload.response = response; sendRequest(\'' . $Adapter . '\', \'' . $Method . '\', payload, refreshControl, \'\', \'' . $ControlProvider . '\', ' . $NextFunction . '); }';                
+
     }
 }
     

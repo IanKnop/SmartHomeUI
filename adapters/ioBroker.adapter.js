@@ -85,7 +85,7 @@ iobroker.prototype.sendRequest = function (requestMode, payload, refreshControl 
     }
 }
 
-iobroker.prototype.refreshState = function (control, updateTimestamp) {
+iobroker.prototype.refreshState = function (bindingInfo, updateTimestamp) {
 
     /* refreshState()______________________________________________________
     Provider bound refresh for ioBroker API                               */
@@ -99,11 +99,10 @@ iobroker.prototype.refreshState = function (control, updateTimestamp) {
         // UPDATE DATA AND REFRESH CONTROLS
         this.updateDataset(updateTimestamp);
 
-    } else if (control.hasControl && this.dataset != null && !this.retrievingData) {
+    } else if (bindingInfo.hasControl && this.dataset != null && !this.retrievingData) {
 
         // REFRESH CONTROLS WITHOUT DATA UPDATE
-        //refreshControl(document.getElementById(control.controlId), this);
-        refreshControl(control, this);
+        refreshControls(bindingInfo, this);
     }
 }
 

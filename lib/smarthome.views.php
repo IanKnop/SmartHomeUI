@@ -88,12 +88,14 @@ class View {
         /* getView()_____________________________________________________________
         Draws a view as defined in configuration file                           */     
 
+        Base::debug('header', $Target);
+
         return Views::parseTemplate('__lib', $Target, 
                 array(
                     "id"           => $this->ViewSource->id, 
                     "columns"      => 'repeat(' . floatval(Settings::get('viewGridColumns')) . ', 1fr)', 
                     "rows"         => 'repeat(' . floatval(Settings::get('viewGridRows')) . ', 1fr)', 
-                    "header"       => $this->getHeader(),
+                    "header"       => $this->getHeader($Target),
                     "modules"      => $this->getModules($Variant, null, false, $Target),
                     "lock-modules" => ($Target == 'view' && Settings::has('lockModules') ? $this->getModules($Variant, Settings::get('lockModules')) : '')
                 )
@@ -157,14 +159,15 @@ class View {
         HEADER
        ========================================================= */
     
-    private function getHeader() {
+    private function getHeader($Target = 'view') {
 
         /* getHeader()__________________________________________________________
         Gets header of given view as HTML                                      */     
 
         $ViewHeader = isset($this->ViewSource->header) ? $this->ViewSource->header : '';
 
-        return Views::parseTemplate('__lib', 'view.header', 
+        if ($Target == 'window') return $ViewHeader;
+        else return Views::parseTemplate('__lib', 'view.header', 
         array(
             "title"       => Util::parseExpressions(Settings::get('header')), 
             "subtitle"    => Util::parseExpressions($ViewHeader), 

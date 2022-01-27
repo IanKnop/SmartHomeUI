@@ -387,7 +387,7 @@ var SmartHomeUI = new function () {
         =========================================================  */
     this.MessageBox = new function () {
 
-        this.show = function (message, showClose = true) {
+        this.show = function (message, showClose = false, autoClose = -1) {
 
             /* show()_____________________________________________________________
             Show Message Box with info text                                      */
@@ -395,6 +395,8 @@ var SmartHomeUI = new function () {
             document.getElementById('cc-msgbox-text').innerHTML = message;
             document.getElementById('cc-msgbox').style.visibility = 'visible';
             document.getElementById('cc-msgbox-close').style.visibility = (showClose ? 'visible' : 'collapse');
+
+            if (autoClose != -1) setTimeout(this.close, autoClose);
         }
 
         this.close = function () {

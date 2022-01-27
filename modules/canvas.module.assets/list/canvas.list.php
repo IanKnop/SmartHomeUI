@@ -37,9 +37,15 @@
                     "style-row"         => Util::getStdStylesByScope($Source->style, 'row', false),
                     "style-cell"        => Util::getStdStylesByScope($Source->style, 'cell', false),
                     "style-header"      => Util::getStdStylesByScope($Source->style, 'header', false),
-                    
-                    "hidden-columns"    => isset($Source->hiddenColumns) ? 'cc-hidden-columns="' . (is_string($Source->hiddenColumns) ? $Source->hiddenColumns : implode(',', $Source->hiddenColumns)) . '"' : '',
 
+                    "highlight-source"  => @Util::val(Util::getStdStylesByScope($Source->highlight, 'source', false), '', 'cc-highlight-source="', '"'),
+                    "highlight-value"   => @Util::val(Util::getStdStylesByScope($Source->highlight, 'value', false), '', 'cc-highlight-value="', '"'),
+                                        
+                    "header-hide"       => isset($Source->hideHeader) ? 'cc-hide-header="' . $Source->hideHeader . '"' : '',
+                    "hidden-columns"    => isset($Source->hiddenColumns) ? 'cc-hidden-columns="' . (is_string($Source->hiddenColumns) ? $Source->hiddenColumns : implode(',', $Source->hiddenColumns)) . '"' : '',
+                    "column-headers"    => isset($Source->columnHeaders) ? 'cc-column-headers="' . (is_string($Source->columnHeaders) ? $Source->columnHeaders : implode(',', $Source->columnHeaders)) . '"' : '',
+                    "column-widths"      => isset($Source->columnWidths) ? 'cc-column-widths="' . (is_string($Source->columnWidths) ? $Source->columnWidths : implode(',', $Source->columnWidths)) . '"' : '',
+                    
                     "binding"           => @Util::val($Source->binding, (isset($Source->bindingProvider) && $Source->bindingProvider == 'internal' ? '#' : '')),
                     "binding-provider"  => @Util::val($Source->bindingProvider, 'cc-provider="internal"', 'cc-provider="', '" '),
                     "conditions"        => isset($Source->conditions) ? 'cc-conditions="' . htmlentities(json_encode($Source->conditions)) . '"' : '',
