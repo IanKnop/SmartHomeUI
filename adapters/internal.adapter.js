@@ -91,7 +91,8 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
             case 'set':
 
                 // SET VALUE
-                var newValue = setValue;
+                if (this.checkUnless(payload, setValue, index)) var newValue = setValue;
+                else var newValue = value;
                 break;
 
             // MATH
@@ -135,7 +136,6 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
         }
 
         // SET NEW VALUE AND UPDATE CONTROLS
-        
         this.setValue(bindingInfo, newValue, senderControl);
         
         if (payload.target.length > 1) returnValue.push({ binding: bindingInfo.binding, mode: mode, oldValue: value, newValue: newValue });
@@ -144,6 +144,30 @@ internalAdapter.prototype.setValues = function (payload, senderControl, response
 
     return returnValue;
 }
+
+internalAdapter.prototype.checkUnless = function (payload, setValue, index) {
+
+    /* checkUnless()__________________________________________________________
+    Checks if value is NOT excepted by "unless" tag                          */
+
+    if (payload.unless != undefined) {
+        
+        if (Array.isArray(payload.unless)) {
+
+            if (payload.unless[index] != undefined && Array.isArray(payload.unless[index])) return !payload.unless[index].includes(setValue);
+            else if (payload.unless[index] != undefined) return payload.unless[index] != setValue;
+            else return !payload.unless.includes(setValue);
+        
+        } else if (typeof payload.unless === 'string' && typeof setValue === 'string') {
+
+            return payload.unless != setValue;
+
+        } else return false;
+    }
+    else return true;
+
+}
+
 
 internalAdapter.prototype.setValue = function (bindingInfo, value, senderControl = null) {
 

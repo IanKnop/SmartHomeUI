@@ -75,7 +75,7 @@ var HeatingProfiles = new function() {
         else if (startHour >= 16 && endHour <= 23 && endHour >= startHour) {
             return 'abends';
         }
-        else if ((startHour >= 22 || (startHour >= 0 && startHour < 6)) && (endHour >= 22 || endHour < 6)) {
+        else if ((startHour >= 22 || (startHour >= 0 && startHour < 6)) && (endHour >= 22 || endHour < 8)) {
             return 'nachts';
         }
         else return this.getCombTimeExp(startHour, endHour);
@@ -102,10 +102,10 @@ var HeatingProfiles = new function() {
         else if (start >= 15 && start < 19) { 
             startValue = 'nachmittags';
         }
-        else if (start >= 19 && start <= 23) { 
+        else if (start >= 19 && start <= 21) { 
             startValue = 'abends';
         }
-        else if (start < 6) { 
+        else if (start >= 22 || start < 6) { 
             startValue = 'nachts';
         }
         
@@ -125,10 +125,10 @@ var HeatingProfiles = new function() {
         else if (end >= 15 && end < 19) { 
             endValue = 'nachmittags';
         }
-        else if (end >= 18 && end <= 23) { 
+        else if (end >= 18 && end <= 21) { 
             endValue = 'abends';
         }
-        else if (end < 6) { 
+        else if (end >= 22 || end < 6) { 
             endValue = 'nachts';
         }
         

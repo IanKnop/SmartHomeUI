@@ -327,8 +327,8 @@ function replaceFieldValues(sourceObject, responseDataset = null, sourceControl 
         
         Object.keys(sourceObject).forEach(key => {
 
-            if (typeof sourceObject[key] != 'string') replaceFieldValues(sourceObject[key], responseDataset, sourceControl, thisDataset);
-            else sourceObject[key] = replaceFieldValue(sourceObject[key], responseDataset, sourceControl, thisDataset);
+            if (typeof sourceObject[key] != 'string' && sourceObject[key] != null) replaceFieldValues(sourceObject[key], responseDataset, sourceControl, thisDataset);
+            else if (typeof sourceObject[key] === 'string') sourceObject[key] = replaceFieldValue(sourceObject[key], responseDataset, sourceControl, thisDataset);
     
         });
     }
@@ -353,6 +353,7 @@ function replaceFieldValue(value, responseDataset = null, sourceControl = null, 
 
             lastPosition = value.indexOf('{response.') + 1;
             if (responseDataset != null && responseDataset[propertyId] != undefined) value = value.replace('{response.' + propertyId + '}', responseDataset[propertyId]);         
+            else value.replace('{response.' + propertyId + '}', '');
         }
 
         // STANDARD FIELDS
@@ -449,7 +450,7 @@ function refreshControl(controlInfo, adapter) {
 
     var bindingInfo = getBindingInfo(controlInfo.binding);
     var bindValue = getBindingValue(bindingInfo);
-    
+
     if (bindValue != undefined) {
 
         controlInfo.control.setAttribute('cc-value', bindValue);
