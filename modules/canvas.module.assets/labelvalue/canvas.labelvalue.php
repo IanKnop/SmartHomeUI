@@ -31,24 +31,33 @@ class LabelValue extends Control implements ICanvasControl {
         return Views::parseTemplate('canvas', 'labelvalue/templates/labelvalue', array(
             "id"            => @Util::val($Source->id, 'label-' . rand(1000000, 9999999)),
             
-            "style"         => Util::getStdStyles($Source),
             "type"          => @Util::val($Source->valueType, 'text'),
-            "labelstyle"    => (isset($Source->labelStyles) ? $Source->labelStyles : '') . (isset($Source->labelStyle) ? $Source->labelStyle : ''),
-            "valuestyle"    => (isset($Source->valueStyles) ? $Source->valueStyles : '') . (isset($Source->valueStyle) ? $Source->valueStyle : ''),
+            
+            "title"         => (isset($Source->title) ? $Source->title : ''),
             "has-title"     => (isset($Source->title) && $Source->title != ''),
+            
+            "style"         => isset($Source->style) ? Util::getStdStyles(Util::getValueByScope($Source->style, 'control')) : '',
+            "labelstyle"    => isset($Source->style) ? Util::getStdStyles(Util::getValueByScope($Source->style, 'label', false)) : '',
+            "valuestyle"    => isset($Source->style) ? Util::getStdStyles(Util::getValueByScope($Source->style, 'value', false)) : '',
+            
             "labelwidth"    => (isset($Source->labelWidth) ? $Source->labelWidth : '50%'),
             "valuewidth"    => (isset($Source->valueWidth) ? $Source->valueWidth : '50%'),
-            "update"        => (isset($Source->binding) && $Source->binding != '' ? 'true': 'false'),
-            "binding"       => @Util::val($Source->binding, '', 'cc-binding="', '"'),
-            "conditions"    => isset($Source->conditions) ? 'cc-conditions="' . htmlentities(json_encode($Source->conditions)) .  '"' : '',
-            "provider"      => @Util::val($Source->bindingProvider, '', 'cc-provider="', '"'),
-            "title"         => (isset($Source->title) ? $Source->title : ''),
-            "raw-value"     => $SourceValue,
+
+            "labelclass"    => isset($Source->class) ? Util::getValueByScope($Source->class, 'label', false) : '',
+            "valueclass"    => isset($Source->class) ? Util::getValueByScope($Source->class, 'value', false) : '',
+           
             "suffix"        => @Util::val($Source->suffix, '', 'cc-suffix="', '"'),
             "prefix"        => @Util::val($Source->prefix, '', 'cc-prefix="', '"'),
             "decimals"      => @Util::val($Source->decimals, '', 'cc-decimals="', '"'),
             "value"         => @Util::val(htmlentities($SourceValue), '', 'cc-value="', '"'),
-            "formatvalue"   => $SourceValue . (isset($Source->suffix) ? $Source->suffix : '')));
+            "formatvalue"   => $SourceValue . (isset($Source->suffix) ? $Source->suffix : ''),
+            "raw-value"     => $SourceValue,
+            
+            "binding"       => @Util::val($Source->binding, '', 'cc-binding="', '"'),
+            "provider"      => @Util::val($Source->bindingProvider, '', 'cc-provider="', '"'),
+            "update"        => (isset($Source->binding) && $Source->binding != '' ? 'true': 'false'),
+
+            "conditions"    => isset($Source->conditions) ? 'cc-conditions="' . htmlentities(json_encode($Source->conditions)) .  '"' : ''));
     }
 }
 ?>

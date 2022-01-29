@@ -1,4 +1,4 @@
-<element style="height: auto; text-align: left; {{[style]}}" {{[conditions]}}>
-    {{[IF:has-title:<div class="canvas-label" style="width: {[labelwidth]}; {[labelstyle]}">{[title]}</div>]}}
-    <div id="{{[id]}}" class="canvas-value" cc-type="{{[type]}}" cc-update="{{[update]}}" {{[binding]}} {{[provider]}} {{[decimals]}} {{[prefix]}} {{[suffix]}} {{[value]}} style="width: {{[valuewidth]}}; {{[valuestyle]}};">{{[formatvalue]}}</div>
+<element id="{{[id]}}-element" style="height: auto; text-align: left; {{[style]}}" {{[conditions]}}>
+    {{[IF:has-title:<div id="{[id]}-title" class="canvas-label {[labelclass]}" style="width: {[labelwidth]}; {[labelstyle]}">{[title]}</div>]}}
+    <div id="{{[id]}}" class="canvas-value {{[valueclass]}}" cc-type="{{[type]}}" cc-update="{{[update]}}" {{[binding]}} {{[provider]}} {{[decimals]}} {{[prefix]}} {{[suffix]}} {{[value]}} style="width: {{[valuewidth]}}; {{[valuestyle]}}">{{[formatvalue]}}</div>
 </element>

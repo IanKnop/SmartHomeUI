@@ -205,7 +205,7 @@ iobroker.prototype.setDatapoint = function (deviceId, value = 'true', nextFuncti
 
     } else {
 
-        SmartHomeUI.InterfaceRequest.send(this.adapterLocation + '/set/' + deviceId + '?value=' + value, URL_ENCODED);
+        SmartHomeUI.InterfaceRequest.send(this.adapterLocation + '/set/' + deviceId + '?value=' + value, null, null, null, URL_ENCODED);
 
     }
 }

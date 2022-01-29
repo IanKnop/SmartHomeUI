@@ -49,6 +49,19 @@ internalAdapter.prototype.sendRequest = function (requestMode, payload, senderCo
             SmartHomeUI.MessageBox.show(payload.message, (payload.showClose != undefined ? payload.showClose : (payload.autoClose != undefined ? false : true)), (payload.autoClose != undefined ? payload.autoClose : -1));    
             break;
 
+        
+        // HTTP: Simple http request
+        case 'http':
+
+            SmartHomeUI.InterfaceRequest.send(payload.url, (payload.payload != undefined ? payload.payload : null), function (requestAnswer) {
+
+                if (nextFunction != null) nextFunction(requestAnswer, this, refreshControl);
+
+            }, null, 
+            (payload.contentType == undefined ? URL_ENCODED : payload.contentType), 
+            (payload.method == undefined ? 'GET' : payload.method));
+            break;
+
         // SCRIPT: Run JavaScript using eval (possible security issues depending on usage)
         case 'script':
 

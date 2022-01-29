@@ -96,12 +96,18 @@ var SmartHomeUI = new function () {
         =========================================================  */
     this.InterfaceRequest = new function () {
 
-        this.send = function (url, data, returnFunction = null, paramValue = null, contentType = 'application/json; charset=UTF-8') {
+        this.send = function (url, data, returnFunction = null, paramValue = null, contentType = 'application/json; charset=UTF-8', method = 'GET') {
 
             /* send()_____________________________________________________________
             Send interface request as JSON object                                */
 
             var httpRequest = new XMLHttpRequest();
+
+            if (method.toUpperCase() == 'GET' && data != null) {
+                
+                url += this.getParameters(data);
+                data = null;
+            }
 
             httpRequest.timeout = 250;
             httpRequest.ontimeout = function (a) {
@@ -125,7 +131,7 @@ var SmartHomeUI = new function () {
                 }
             };
 
-            httpRequest.open('GET', url, true);
+            httpRequest.open(method, url, true);
             httpRequest.setRequestHeader('Content-type', contentType);
             httpRequest.send(data);
         }
@@ -141,6 +147,18 @@ var SmartHomeUI = new function () {
             http.send();
 
             return (http.status == 200);
+        }
+
+        this.getParameters = function(payload) {
+
+            /* getParameters()________________________________________________________
+            Gets parameters for GET request from object                              */
+
+            var returnValue = '?';
+            Object.keys(payload).forEach(key => { returnValue += key + '=' + payload[key].toString(); });
+
+            return returnValue.substring(0, returnValue.length);
+            
         }
     }
 
